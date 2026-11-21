@@ -1,72 +1,42 @@
-#!/usr/bin/env python3
-"""
-Voice Studio Orchestrator (run_studio.py)
-Concurrently runs FastAPI backend server and Vite frontend dev server.
-Provides clean terminal logging, graceful process termination on Windows/Linux,
-and automatic browser launch.
-"""
+"""Voice Studio Orchestrator lintas OS (Windows/Linux/macOS) tanpa orphan process."""
 
-import argparse
+from __future__ import annotations
+
 import os
+import shutil
 import signal
 import subprocess
 import sys
-import threading
 import time
+import urllib.error
 import urllib.request
 import webbrowser
 from pathlib import Path
 
-# Paths
-ROOT_DIR = Path(__file__).resolve().parent
-SERVER_DIR = ROOT_DIR / "server"
-UI_DIR = ROOT_DIR / "ui"
+BASE_DIR = Path(__file__).resolve().parent
+UI_DIR = BASE_DIR / "ui"
+API_HOST = os.getenv("API_HOST", "127.0.0.1")
+API_PORT = int(os.getenv("API_PORT", "8000"))
+UI_PORT = int(os.getenv("UI_PORT", "5173"))
 
-# ANSI Colors for terminal output
-RESET = "\033[0m"
-BOLD = "\033[1m"
-GREEN = "\033[32m"
-BLUE = "\033[34m"
-CYAN = "\033[36m"
-YELLOW = "\033[33m"
-RED = "\033[31m"
-MAGENTA = "\033[35m"
 
-# Enable VT100 colors in Windows cmd/powershell
-if os.name == "nt":
-    os.system("")
+def wait_for_server(url: str, timeout_sec: float = 25.0, interval_sec: float = 0.5) -> bool:
+    """Menunggu hingga endpoint HTTP merespons sebelum membuka browser."""
+    deadline = time.monotonic() + timeout_sec
+    while time.monotonic() < deadline:
+        try:
+            with urllib.request.urlopen(url, timeout=2.0) as resp:
+                if resp.status < 500:
+                    return True
+        except (urllib.error.URLError, TimeoutError, OSError):
+            pass
+        time.sleep(interval_sec)
+    return False
 
-def log_system(msg: str):
-    print(f"{BOLD}{CYAN}[Studio Manager]{RESET} {msg}", flush=True)
 
-def log_backend(msg: str):
-    print(f"{GREEN}[FastAPI]{RESET} {msg}", flush=True)
-
-def log_frontend(msg: str):
-    print(f"{MAGENTA}[Vite UI]{RESET} {msg}", flush=True)
-
-def log_error(msg: str):
-    print(f"{BOLD}{RED}[Error]{RESET} {msg}", flush=True)
-
-def stream_reader(pipe, log_func, on_ready_callback=None):
-    """Stream subprocess output line-by-line."""
-    try:
-        for line in iter(pipe.readline, ""):
-            if not line:
-                break
-            clean_line = line.rstrip()
-            if clean_line:
-                log_func(clean_line)
-                if on_ready_callback and on_ready_callback(clean_line):
-                    on_ready_callback = None
-    except Exception:
-        pass
-    finally:
-        pipe.close()
-
-def kill_process_tree(proc: subprocess.Popen):
-    """Safely terminate a process and all its child processes."""
-    if not proc or proc.poll() is not None:
+def kill_process_tree(proc: subprocess.Popen[bytes] | None) -> None:
+    """Menghentikan seluruh pohon proses secara bersih di Windows maupun POSIX."""
+    if proc is None or proc.poll() is not None:
         return
     try:
         if os.name == "nt":
@@ -74,192 +44,85 @@ def kill_process_tree(proc: subprocess.Popen):
                 ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                check=False
+                check=False,
             )
         else:
-            proc.terminate()
+            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
             try:
-                proc.wait(timeout=3)
+                proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                proc.kill()
-    except Exception as e:
-        log_error(f"Failed to kill process {proc.pid}: {e}")
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    except (ProcessLookupError, OSError):
+        pass
 
-def check_dependencies(skip_install: bool = False):
-    """Verify backend and frontend dependencies are present."""
-    log_system("Checking environment dependencies...")
-    
-    # 1. Check Python packages
+
+def main() -> int:
+    npm_cmd = shutil.which("npm.cmd" if os.name == "nt" else "npm")
+    if not npm_cmd:
+        print("[ERROR] npm tidak ditemukan di PATH. Pastikan Node.js sudah terpasang.")
+        return 1
+
+    if not (UI_DIR / "node_modules").exists():
+        print("[INFO] Menginstal dependensi frontend di ui/ ...")
+        subprocess.run([npm_cmd, "install"], cwd=str(UI_DIR), check=True)
+
+    popen_kwargs: dict[str, object] = {}
+    if os.name == "nt":
+        popen_kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+    else:
+        popen_kwargs["start_new_session"] = True
+
+    backend_proc: subprocess.Popen[bytes] | None = None
+    frontend_proc: subprocess.Popen[bytes] | None = None
+
     try:
-        import fastapi
-        import uvicorn
-        log_system("✓ FastAPI and Uvicorn are installed.")
-    except ImportError:
-        log_error("FastAPI or Uvicorn not installed.")
-        req_file = ROOT_DIR / "requirements.txt"
-        if req_file.exists() and not skip_install:
-            log_system(f"Installing dependencies from {req_file.name}...")
-            subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(req_file)], check=True)
-        else:
-            log_error("Please install dependencies: pip install -r requirements.txt")
-            sys.exit(1)
-
-    # 2. Check UI node_modules
-    if UI_DIR.exists():
-        node_modules = UI_DIR / "node_modules"
-        if not node_modules.exists() and not skip_install:
-            log_system("ui/node_modules not found. Running npm install in ui/...")
-            npm_cmd = "npm.cmd" if os.name == "nt" else "npm"
-            subprocess.run([npm_cmd, "install"], cwd=str(UI_DIR), check=True)
-            log_system("✓ npm dependencies installed.")
-
-def wait_for_server(url: str, timeout: int = 15) -> bool:
-    """Poll a URL until it responds with HTTP 200 or timeout occurs."""
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": "VoiceStudioHealthCheck"})
-            with urllib.request.urlopen(req, timeout=1) as response:
-                if response.status in (200, 404):  # Even 404 indicates server is responding
-                    return True
-        except Exception:
-            time.sleep(0.5)
-    return False
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="Run AI Faceless Voice Studio (FastAPI + Vite Frontend)"
-    )
-    parser.add_argument("--host", default="127.0.0.1", help="Host binding (default: 127.0.0.1)")
-    parser.add_argument("--backend-port", type=int, default=8000, help="Backend API port (default: 8000)")
-    parser.add_argument("--frontend-port", type=int, default=5173, help="Frontend UI port (default: 5173)")
-    parser.add_argument("--no-browser", action="store_true", help="Do not automatically launch web browser")
-    parser.add_argument("--backend-only", action="store_true", help="Launch only FastAPI backend")
-    parser.add_argument("--frontend-only", action="store_true", help="Launch only Vite frontend")
-    parser.add_argument("--skip-install", action="store_true", help="Skip automatic dependency installation")
-    args = parser.parse_args()
-
-    print(f"{BOLD}{BLUE}===================================================={RESET}")
-    print(f"{BOLD}{BLUE}     🎬 AI Faceless Voice Studio Orchestrator     {RESET}")
-    print(f"{BOLD}{BLUE}===================================================={RESET}\n")
-
-    check_dependencies(args.skip_install)
-
-    processes = []
-    
-    def cleanup_handler(signum=None, frame=None):
-        log_system("Shutting down Voice Studio services...")
-        for p in processes:
-            kill_process_tree(p)
-        log_system("All services stopped.")
-        sys.exit(0)
-
-    # Register signal handlers
-    signal.signal(signal.SIGINT, cleanup_handler)
-    signal.signal(signal.SIGTERM, cleanup_handler)
-
-    # 1. Start FastAPI Backend
-    backend_proc = None
-    if not args.frontend_only:
-        log_system(f"Starting FastAPI backend on http://{args.host}:{args.backend_port}...")
-        backend_cmd = [
-            sys.executable,
-            "-m",
-            "uvicorn",
-            "server.main:app",
-            "--host",
-            args.host,
-            "--port",
-            str(args.backend_port),
-            "--reload"
-        ]
+        print(f"[STUDIO] Menyalakan FastAPI Backend di http://{API_HOST}:{API_PORT} ...")
         backend_proc = subprocess.Popen(
-            backend_cmd,
-            cwd=str(ROOT_DIR),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1
+            [
+                sys.executable,
+                "-m",
+                "uvicorn",
+                "server.main:app",
+                "--host",
+                API_HOST,
+                "--port",
+                str(API_PORT),
+            ],
+            cwd=str(BASE_DIR),
+            **popen_kwargs,
         )
-        processes.append(backend_proc)
 
-        threading.Thread(
-            target=stream_reader,
-            args=(backend_proc.stdout, log_backend),
-            daemon=True
-        ).start()
-        threading.Thread(
-            target=stream_reader,
-            args=(backend_proc.stderr, log_backend),
-            daemon=True
-        ).start()
-
-    # 2. Start Vite Frontend
-    frontend_proc = None
-    vite_ready_event = threading.Event()
-
-    def check_vite_ready(line: str) -> bool:
-        if "http://localhost:" in line or "http://127.0.0.1:" in line or "ready in" in line.lower():
-            vite_ready_event.set()
-            return True
-        return False
-
-    if not args.backend_only and UI_DIR.exists():
-        log_system(f"Starting Vite UI dev server on port {args.frontend_port}...")
-        npm_cmd = "npm.cmd" if os.name == "nt" else "npm"
-        frontend_cmd = [
-            npm_cmd,
-            "run",
-            "dev",
-            "--",
-            "--host",
-            args.host,
-            "--port",
-            str(args.frontend_port)
-        ]
+        print(f"[STUDIO] Menyalakan Mosaic Voice Studio UI di http://localhost:{UI_PORT} ...")
         frontend_proc = subprocess.Popen(
-            frontend_cmd,
+            [npm_cmd, "run", "dev", "--", "--port", str(UI_PORT)],
             cwd=str(UI_DIR),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1
+            **popen_kwargs,
         )
-        processes.append(frontend_proc)
 
-        threading.Thread(
-            target=stream_reader,
-            args=(frontend_proc.stdout, log_frontend, check_vite_ready),
-            daemon=True
-        ).start()
-        threading.Thread(
-            target=stream_reader,
-            args=(frontend_proc.stderr, log_frontend),
-            daemon=True
-        ).start()
+        api_ready = wait_for_server(f"http://{API_HOST}:{API_PORT}/api/health", timeout_sec=20.0)
+        ui_ready = wait_for_server(f"http://127.0.0.1:{UI_PORT}", timeout_sec=25.0)
+        if api_ready and ui_ready:
+            url = f"http://localhost:{UI_PORT}"
+            print(f"[STUDIO] Siap digunakan di {url}")
+            webbrowser.open(url)
+        else:
+            print("[WARN] Salah satu server belum merespons dalam batas waktu; periksa log terminal.")
 
-    # Health check & Browser launch
-    if not args.no_browser and not args.backend_only and UI_DIR.exists():
-        ui_url = f"http://{args.host}:{args.frontend_port}"
-        log_system(f"Waiting for UI service to be ready at {ui_url}...")
-        vite_ready_event.wait(timeout=10)
-        time.sleep(1)  # small stabilization pause
-        log_system(f"Opening browser at {ui_url}...")
-        webbrowser.open(ui_url)
-
-    log_system(f"{GREEN}Voice Studio is live! Press Ctrl+C to terminate.{RESET}")
-
-    # Keep main thread alive monitoring children
-    try:
         while True:
-            for p in processes:
-                exit_code = p.poll()
-                if exit_code is not None:
-                    log_error(f"Process PID {p.pid} exited unexpectedly with code {exit_code}")
-                    cleanup_handler()
+            if backend_proc.poll() is not None:
+                print(f"[STUDIO] Backend berhenti dengan kode {backend_proc.returncode}.")
+                return backend_proc.returncode or 1
+            if frontend_proc.poll() is not None:
+                print(f"[STUDIO] Frontend berhenti dengan kode {frontend_proc.returncode}.")
+                return frontend_proc.returncode or 1
             time.sleep(0.5)
     except KeyboardInterrupt:
-        cleanup_handler()
+        print("\n[STUDIO] Mematikan server backend dan frontend...")
+        return 0
+    finally:
+        kill_process_tree(frontend_proc)
+        kill_process_tree(backend_proc)
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

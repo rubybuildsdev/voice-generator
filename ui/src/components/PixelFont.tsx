@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react'
+import * as React from "react"
 
-const GLYPHS: { [ch: string]: string } = {
+export const GLYPHS: Record<string, string> = {
   A: ".###./#...#/#...#/#####/#...#/#...#/#...#",
   B: "####./#...#/#...#/####./#...#/#...#/####.",
   C: ".###./#...#/#..../#..../#..../#...#/.###.",
@@ -72,11 +72,27 @@ const GLYPHS: { [ch: string]: string } = {
   ":": "././#/././././#",
   "/": "....#/...#./...#./..#../.#.../.#.../#....",
   "&": ".##../#..#./#.#../.#.../#.#.#/#..#./.##.#",
-  "$": "..#../.####/#.#../.###./..#.#/####./..#..",
   "+": "...../..#../..#../#####/..#../..#../.....",
-  "%": "##..#/##.#./...#./..#../.#.../.#.##/#..##",
 }
 
+const ICONS: Record<string, string> = {
+  spark: "...#.../...#.../..###../#######/..###../...#.../...#...",
+  eye: "......./..###../.#...#./#..#..#/.#...#./..###../.......",
+  code: ".##.##./.#...#./#.....#/#.....#/#.....#/.#...#./.##.##.",
+  chat: "#######/#.....#/#.#.#.#/#.....#/#######/.##..../.#.....",
+  phone: ".#####./.#...#./.#...#./.#...#./.#####./.##.##./.#####.",
+  rocket: "...#.../..###../..#.#../..###../.#####./#.###.#/..#.#..",
+  window: "#######/#.#.#.#/#######/#.....#/#.....#/#.....#/#######",
+  bars: "......#/....#.#/....#.#/..#.#.#/..#.#.#/#.#.#.#/#######",
+  bolt: "....##./...##../..##.../.######/...##../..##.../.##....",
+  check: "......./......#/.....#./#...#../.#.#.../..#..../.......",
+  arrow: "...#.../..###../.#.#.#./#..#..#/...#.../...#.../...#...",
+  down: "...#.../...#.../...#.../#..#..#/.#.#.#./..###../...#...",
+  clip: "..###../.#...#./.#.#.#./.#.#.#./.#.#.#./.#...#./..###..",
+  wave: "...#.../...#.../.#.#.#./##.#.##/.#.#.#./...#.../...#...",
+}
+
+export type MosaicIconName = keyof typeof ICONS
 export type PixelGlyph = { x: number; w: number; cells: number[][] }
 
 export function layoutPixels(text: string) {
@@ -88,11 +104,13 @@ export function layoutPixels(text: string) {
       x += 3
       continue
     }
-    const rows = g.split('/')
+    const rows = g.split("/")
     const w = Math.max(...rows.map((r) => r.length))
     const cells: number[][] = []
     rows.forEach((r, y) => {
-      for (let i = 0; i < r.length; i++) if (r[i] === '#') cells.push([x + i, y])
+      for (let i = 0; i < r.length; i++) {
+        if (r[i] === "#") cells.push([x + i, y])
+      }
     })
     glyphs.push({ x, w, cells })
     x += w + 1
@@ -100,67 +118,45 @@ export function layoutPixels(text: string) {
   return { width: Math.max(1, x - 1), height: 8, glyphs }
 }
 
-const ICONS: { [k: string]: string } = {
-  spark: "...#.../...#.../..###../#######/..###../...#.../...#...",
-  eye: "......./..###../.#...#./#..#..#/.#...#./..###../.......",
-  code: ".##.##./.#...#./#.....#/#.....#/#.....#/.#...#./.##.##.",
-  chat: "#######/#.....#/#.#.#.#/#.....#/#######/.##..../.#.....",
-  phone: ".#####./.#...#./.#...#./.#...#./.#####./.##.##./.#####.",
-  rocket: "...#.../..###../..#.#../..###../.#####./#.###.#/..#.#..",
-  window: "#######/#.#.#.#/#######/#.....#/#.....#/#.....#/#######",
-  bars: "......#/....#.#/....#.#/..#.#.#/..#.#.#/#.#.#.#/#######",
-  game: "...#.../...#.../..###../.#####./#######/#.#.#.#/#######",
-  bolt: "....##./...##../..##.../.######/...##../..##.../.##....",
-  check: "......./......#/.....#./#...#../.#.#.../..#..../.......",
-  arrow: "...#.../..###../.#.#.#./#..#..#/...#.../...#.../...#...",
-  down: "...#.../...#.../...#.../#..#..#/.#.#.#./..###../...#...",
-  clip: "..###../.#...#./.#.#.#./.#.#.#./.#.#.#./.#...#./..###..",
-  mic: "...###./..#...#/.#####./.#####./..###../...#.../.#####.",
-  sound: ".#...#./.##.##./.#####./.#####./.#####./.##.##./.#...#.",
-}
-
 export function PixelText({
   text,
-  className = '',
+  className,
   maxWidth,
-  color,
 }: {
   text: string
   className?: string
   maxWidth?: number
-  color?: string
 }) {
-  const lay = useMemo(() => layoutPixels(text), [text])
+  const lay = React.useMemo(() => layoutPixels(text), [text])
   const vw = lay.width + 1
   const vh = lay.height + 1
   return (
     <svg
-      className={`mpt-ptext ${className}`}
+      className={"mpt-ptext" + (className ? " " + className : "")}
       viewBox={`-0.5 -0.5 ${vw} ${vh}`}
       aria-hidden="true"
       focusable="false"
       style={
         {
-          ['--w' as string]: vw,
-          ['--wmax' as string]: maxWidth || vw,
+          "--w": vw,
+          "--wmax": maxWidth || vw,
           aspectRatio: `${vw} / ${vh}`,
-          fill: color || 'currentColor',
         } as React.CSSProperties
       }
     >
       {lay.glyphs.map((g, gi) => (
         <g key={gi} className="mpt-glyph">
-          {g.cells.map(([x, y], i) => (
+          {g.cells.map(([cx, cy], i) => (
             <rect
               key={i}
               className="mpt-px"
-              x={x + 0.06}
-              y={y + 0.06}
+              x={cx + 0.06}
+              y={cy + 0.06}
               width={0.88}
               height={0.88}
               rx={0.16}
-              data-x={x + 0.06}
-              data-y={y + 0.06}
+              data-x={cx + 0.06}
+              data-y={cy + 0.06}
             />
           ))}
         </g>
@@ -169,17 +165,42 @@ export function PixelText({
   )
 }
 
-export function PixelIcon({ name, className = '' }: { name: string; className?: string }) {
-  const rows = (ICONS[name] || ICONS.spark).split('/')
+export function PixelIcon({
+  name,
+  className,
+}: {
+  name: MosaicIconName
+  className?: string
+}) {
+  const rows = (ICONS[name] || ICONS.spark).split("/")
   const cells: number[][] = []
   rows.forEach((r, y) => {
-    for (let x = 0; x < r.length; x++) if (r[x] === '#') cells.push([x, y])
+    for (let x = 0; x < r.length; x++) {
+      if (r[x] === "#") cells.push([x, y])
+    }
   })
   return (
-    <svg className={`mpt-picon ${className}`} viewBox="0 0 7 7" aria-hidden="true" focusable="false">
+    <svg
+      className={"mpt-picon" + (className ? " " + className : "")}
+      viewBox="0 0 7 7"
+      aria-hidden="true"
+      focusable="false"
+    >
       {cells.map(([x, y], i) => (
         <rect key={i} x={x + 0.08} y={y + 0.08} width={0.84} height={0.84} rx={0.12} />
       ))}
+    </svg>
+  )
+}
+
+export function StudioMark({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 34 34" aria-hidden="true" focusable="false">
+      <rect width="34" height="34" rx="9" fill="#f4f4f5" />
+      <rect x="8" y="13" width="3.5" height="8" rx="1.2" fill="#0b0b0d" />
+      <rect x="13.2" y="8" width="3.5" height="18" rx="1.2" fill="#0b0b0d" />
+      <rect x="18.4" y="11" width="3.5" height="12" rx="1.2" fill="#0b0b0d" />
+      <rect x="23.6" y="14" width="3.5" height="6" rx="1.2" fill="#0b0b0d" />
     </svg>
   )
 }

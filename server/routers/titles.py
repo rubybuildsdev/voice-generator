@@ -1,58 +1,65 @@
+"""Endpoint riset judul, chat brainstorming, dan simpan judul."""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+
 from fastapi import APIRouter, HTTPException
+
 from server.schemas import (
-    TitleRequest,
-    TitleResponse,
+    SaveTitleRequest,
+    SaveTitleResponse,
     TitleChatRequest,
     TitleChatResponse,
-    SaveTitleRequest,
+    TitleRequest,
+    TitleResponse,
 )
-from server.services import gemini_service
+from server.services.gemini_client import GeminiConfigError
+from server.services.title_service import (
+    chat_title_discussion,
+    generate_titles,
+    save_title,
+)
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/titles", tags=["Titles"])
 
+
 @router.post("/generate", response_model=TitleResponse)
-async def generate_titles_endpoint(req: TitleRequest):
-    """
-    Riset & Hasilkan Rekomendasi Judul (44-54 Karakter)
-    Mengekstrak fakta terkuat menjadi 3 rekomendasi judul video pendek berstandar retensi tinggi
-    dan konsep thumbnail pelengkap sesuai 5 Formula Teruji.
-    """
-    if not req.topic.strip():
-        raise HTTPException(status_code=400, detail="Topik atau data riset tidak boleh kosong.")
+async def api_generate_titles(req: TitleRequest) -> TitleResponse:
     try:
-        result = gemini_service.generate_titles(req.topic, req.count)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return await asyncio.to_thread(generate_titles, req.topic, req.count, True)
+    except GeminiConfigError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Gagal menghasilkan rekomendasi judul")
+        raise HTTPException(
+            status_code=500, detail="Gagal menghasilkan rekomendasi judul."
+        ) from exc
+
 
 @router.post("/chat", response_model=TitleChatResponse)
-async def chat_titles_endpoint(req: TitleChatRequest):
-    """
-    Obrolan Santai Diskusi Judul & Brainstorming Ide Hook
-    Berfungsi sebagai chatbot ideation partner tanpa langsung membuat file ke disk.
-    """
-    if not req.messages:
-        raise HTTPException(status_code=400, detail="Pesan obrolan tidak boleh kosong.")
+async def api_chat_titles(req: TitleChatRequest) -> TitleChatResponse:
     try:
-        result = gemini_service.chat_title_discussion(req.messages)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return await asyncio.to_thread(chat_title_discussion, req.messages)
+    except GeminiConfigError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Gagal memproses chat brainstorming judul")
+        raise HTTPException(
+            status_code=500, detail="Gagal memproses diskusi judul."
+        ) from exc
 
-@router.post("/save")
-async def save_title_endpoint(req: SaveTitleRequest):
-    """
-    Menyimpan judul terpilih ke content/titles/ hanya saat pengguna sudah setuju.
-    """
-    if not req.title.strip():
-        raise HTTPException(status_code=400, detail="Judul tidak boleh kosong.")
+
+@router.post("/save", response_model=SaveTitleResponse)
+async def api_save_title(req: SaveTitleRequest) -> SaveTitleResponse:
     try:
-        saved_path = gemini_service.save_title_selection(
-            title=req.title,
-            formula=req.formula or "Curiosity Gap",
-            why_it_works=req.why_it_works,
-            topic=req.topic
+        return await asyncio.to_thread(
+            save_title, req.title, req.formula, req.why_it_works
         )
-        return {"success": True, "saved_path": saved_path, "title": req.title}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        logger.exception("Gagal menyimpan judul ke disk")
+        raise HTTPException(
+            status_code=500, detail="Gagal menyimpan judul terpilih."
+        ) from exc

@@ -1,30 +1,16 @@
-export type IntentType = 'auto' | 'title' | 'script' | 'voice_only' | 'full'
+export type IntentType = "auto" | "full" | "title" | "script" | "voice_only"
+export type MosaicAccent = "ice" | "ember" | "lime"
+export type ComposerPhase = "idle" | "building" | "done"
 
-export interface VoiceOption {
+export interface VoiceProfile {
   id: string
   name: string
+  gender: "Pria" | "Wanita"
+  category: "Populer" | "Pria" | "Wanita"
+  tone: string
+  style: string
   description: string
-  gender: 'Pria' | 'Wanita'
-  category?: 'Populer' | 'Pria' | 'Wanita'
-  badge: string
-  recommended?: boolean
-}
-
-export interface PipelineRequest {
-  intent: IntentType
-  prompt: string
-  title?: string
-  script_text?: string
-  voice?: string
-  auto_tag?: boolean
-  auto_proceed?: boolean
-}
-
-export interface VocalTag {
-  tag: string
-  label: string
-  category: 'pause' | 'breath' | 'emotion' | 'reaction'
-  hint: string
+  recommended: boolean
 }
 
 export interface TitleRecommendation {
@@ -40,20 +26,18 @@ export interface ThumbnailConcept {
 }
 
 export interface TitleResponse {
-  success: boolean
   topic: string
   recommendations: TitleRecommendation[]
-  thumbnail: ThumbnailConcept
-  markdown_output: string
+  thumbnail_concept: ThumbnailConcept
+  saved_path?: string | null
 }
 
 export interface ChatMessage {
-  role: 'user' | 'assistant'
+  role: "user" | "assistant"
   content: string
 }
 
 export interface TitleChatResponse {
-  success: boolean
   reply: string
   suggested_titles: TitleRecommendation[]
 }
@@ -67,7 +51,6 @@ export interface ScriptSegment {
 }
 
 export interface ScriptResponse {
-  success: boolean
   title: string
   slug: string
   breakdown: ScriptSegment[]
@@ -75,12 +58,11 @@ export interface ScriptResponse {
   tagged_text: string
   word_count: number
   estimated_duration_sec: number
-  saved_path?: string
+  saved_path: string
   markdown_table: string
 }
 
 export interface TTSResponse {
-  success: boolean
   filename: string
   audio_url: string
   voice: string
@@ -89,7 +71,6 @@ export interface TTSResponse {
   file_size_bytes: number
   sample_rate: number
   primary_path: string
-  mirror_path?: string
 }
 
 export interface WordTimestamp {
@@ -99,7 +80,6 @@ export interface WordTimestamp {
 }
 
 export interface TranscribeResponse {
-  success: boolean
   filename: string
   words: WordTimestamp[]
   vtt_content: string
@@ -109,39 +89,62 @@ export interface TranscribeResponse {
   duration_sec: number
 }
 
+export interface PipelineRequest {
+  intent: IntentType
+  prompt: string
+  title?: string
+  script_text?: string
+  voice: string
+  auto_tag: boolean
+  auto_proceed: boolean
+}
+
 export interface PipelineResponse {
-  success: boolean
   intent: string
-  title_data?: TitleResponse
-  script_data?: ScriptResponse
-  tts_data?: TTSResponse
-  transcribe_data?: TranscribeResponse
+  title_data?: TitleResponse | null
+  script_data?: ScriptResponse | null
+  tts_data?: TTSResponse | null
+  transcribe_data?: TranscribeResponse | null
   execution_time_sec: number
+}
+
+export interface SSELogEvent {
+  event: string
+  step: string
+  stage: string
+  message: string
+  progress: number
+  timestamp: string
+  steps?: string[]
+  payload?: unknown
 }
 
 export interface HistoryItem {
   id: string
-  type: string
+  type: "audio" | "script" | "title"
   name: string
-  title?: string
+  title: string
   created_at: string
-  file_size_bytes?: number
-  duration_sec?: number
-  voice?: string
-  audio_url?: string
-  json_url?: string
-  vtt_url?: string
+  file_size_bytes: number
+  duration_sec?: number | null
+  voice?: string | null
+  audio_url?: string | null
+  json_url?: string | null
+  vtt_url?: string | null
   has_transcript: boolean
-  script_clean?: string
-  script_tagged?: string
 }
 
-export interface SSELogEvent {
-  step: number
-  total_steps: number
-  stage: string
-  message: string
-  timestamp: string
-  progress: number
-  payload?: any
+export interface HealthResponse {
+  status: string
+  version: string
+  gemini_api_configured: boolean
+  detected_model: {
+    status: string
+    text_model: string
+    tts_model: string
+    transcribe_model: string
+    display_name: string
+  }
+  voices_count: number
+  tags_count: number
 }
