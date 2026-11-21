@@ -41,7 +41,7 @@ export function useStudioPipeline() {
       .catch(() => {
         // sudah ditangani fallback lokal
       })
-    fetchHealth(controller.signal)
+    fetchHealth(false, controller.signal)
       .then(setHealth)
       .catch(() => {
         setHealth(null)
