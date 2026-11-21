@@ -56,6 +56,7 @@ def generate_tts(
         model=TTS_MODEL,
         contents=prompt_text,
         config=types.GenerateContentConfig(
+            http_options=types.HttpOptions(api_version="v1beta"),
             response_modalities=["AUDIO"],
             speech_config=types.SpeechConfig(
                 voice_config=types.VoiceConfig(
