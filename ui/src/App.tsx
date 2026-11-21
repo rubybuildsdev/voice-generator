@@ -10,6 +10,7 @@ import { PixelText, PixelIcon } from './components/PixelText'
 import { SmartComposer } from './components/SmartComposer'
 import { LiveBuildLog } from './components/LiveBuildLog'
 import { KaraokePlayer } from './components/KaraokePlayer'
+import { ScriptViewer } from './components/ScriptViewer'
 import { MetricsBar } from './components/MetricsBar'
 import { DownloadToolbar } from './components/DownloadToolbar'
 import { HistoryDrawer } from './components/HistoryDrawer'
@@ -73,8 +74,10 @@ export default function App() {
   const handleStartPipeline = async () => {
     setPhase('building')
     setLogEvents([])
-    setActiveStep(1)
-    setProgress(5)
+    const initialStep = intent === 'script' ? 3 : intent === 'voice_only' ? 4 : 1
+    const initialProgress = intent === 'script' ? 35 : intent === 'voice_only' ? 65 : 5
+    setActiveStep(initialStep)
+    setProgress(initialProgress)
 
     const abortController = new AbortController()
     abortControllerRef.current = abortController
@@ -99,6 +102,8 @@ export default function App() {
       setResult(res)
       setPhase('done')
 
+      const hasAudioGenerated = Boolean(res.tts_data?.audio_url || res.tts_data?.filename)
+
       // Save to history
       const historyItem: HistoryItem = {
         id: `gen_${Date.now()}`,
@@ -106,12 +111,12 @@ export default function App() {
         name: res.script_data?.title || res.title_data?.recommendations[0]?.title || prompt.slice(0, 40),
         title: res.script_data?.title || res.title_data?.recommendations[0]?.title || prompt.slice(0, 40),
         created_at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        duration_sec: res.tts_data?.duration_sec || 30,
+        duration_sec: res.tts_data?.duration_sec || res.script_data?.estimated_duration_sec || 30,
         voice: res.tts_data?.voice || voice,
-        audio_url: res.tts_data?.audio_url || '/output/audio/baterai.wav',
-        json_url: res.transcribe_data?.json_url || '/output/transcripts/words_clean.json',
-        vtt_url: res.transcribe_data?.vtt_url || '/output/transcripts/baterai.vtt',
-        has_transcript: true,
+        audio_url: res.tts_data?.audio_url || (res.tts_data?.filename ? `/api/audio/${res.tts_data.filename}` : ''),
+        json_url: res.transcribe_data?.json_url || '',
+        vtt_url: res.transcribe_data?.vtt_url || '',
+        has_transcript: hasAudioGenerated && Boolean(res.transcribe_data?.words?.length),
         script_clean: res.script_data?.clean_text,
         script_tagged: res.script_data?.tagged_text,
       }
@@ -131,6 +136,83 @@ export default function App() {
             total_steps: 5,
             stage: 'error',
             message: `Gagal: ${err.message || 'Terjadi kesalahan sistem'}`,
+            timestamp: new Date().toLocaleTimeString(),
+            progress: 0,
+          },
+        ])
+      }
+    }
+  }
+
+  // Proceed directly from ScriptViewer to TTS synthesis
+  const handleProceedToTTS = async (chosenVoice: string) => {
+    if (!result?.script_data) return
+    setVoice(chosenVoice)
+    setPhase('building')
+    setLogEvents([])
+    setActiveStep(4)
+    setProgress(60)
+
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
+
+    try {
+      const res = await executePipelineStream(
+        {
+          intent: 'voice_only',
+          prompt: result.script_data.tagged_text,
+          voice: chosenVoice,
+          auto_tag: false,
+          auto_proceed: true,
+        },
+        (event: SSELogEvent) => {
+          setLogEvents((prev) => [...prev, event])
+          if (event.step) setActiveStep(event.step)
+          if (event.progress) setProgress(event.progress)
+        },
+        abortController.signal
+      )
+
+      // Merge script_data and new tts_data
+      const mergedResult: PipelineResponse = {
+        ...res,
+        script_data: result.script_data,
+        title_data: result.title_data,
+      }
+      setResult(mergedResult)
+      setPhase('done')
+
+      // Save to history
+      const historyItem: HistoryItem = {
+        id: `gen_${Date.now()}`,
+        type: 'FULL',
+        name: result.script_data.title,
+        title: result.script_data.title,
+        created_at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        duration_sec: res.tts_data?.duration_sec || 30,
+        voice: res.tts_data?.voice || chosenVoice,
+        audio_url: res.tts_data?.audio_url || (res.tts_data?.filename ? `/api/audio/${res.tts_data.filename}` : ''),
+        json_url: res.transcribe_data?.json_url || '',
+        vtt_url: res.transcribe_data?.vtt_url || '',
+        has_transcript: Boolean(res.transcribe_data?.words?.length),
+        script_clean: result.script_data.clean_text,
+        script_tagged: result.script_data.tagged_text,
+      }
+      saveLocalHistoryItem(historyItem)
+      setHistoryItems((prev) => [historyItem, ...prev.filter((i) => i.id !== historyItem.id)])
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.log('TTS synthesis stopped by user.')
+        setPhase('idle')
+      } else {
+        console.error('TTS error:', err)
+        setLogEvents((prev) => [
+          ...prev,
+          {
+            step: 4,
+            total_steps: 5,
+            stage: 'error',
+            message: `Gagal sintesis suara TTS: ${err.message || 'Terjadi kesalahan sistem'}`,
             timestamp: new Date().toLocaleTimeString(),
             progress: 0,
           },
@@ -220,10 +302,10 @@ export default function App() {
     localStorage.setItem('faceless_voice_studio_history', JSON.stringify(updated))
   }
 
-  // Active audio URL for playback
+  // Active audio URL for playback (empty string if no audio generated)
   const activeAudioUrl =
     result?.tts_data?.audio_url ||
-    (result?.tts_data?.filename ? `/api/audio/${result.tts_data.filename}` : '/output/audio/baterai.wav')
+    (result?.tts_data?.filename ? `/api/audio/${result.tts_data.filename}` : '')
 
   return (
     <div className="relative min-h-screen text-[#f5f5f6] font-sans selection:bg-[#5fb2f2]/30 selection:text-[#5fb2f2]">
@@ -258,6 +340,18 @@ export default function App() {
 
             {/* Right Header Navigation & Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* Reset to New Composer button if not in idle */}
+              {phase !== 'idle' && (
+                <button
+                  type="button"
+                  onClick={() => handleReset(false)}
+                  className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl bg-[#5fb2f2]/15 hover:bg-[#5fb2f2]/25 text-[#bae6fd] border border-[#5fb2f2]/30 transition-all text-xs sm:text-sm font-semibold shadow-[0_0_12px_rgba(95,178,242,0.2)]"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-[#5fb2f2]" />
+                  <span>Mulai Baru</span>
+                </button>
+              )}
+
               {/* Backend API Status Pill */}
               <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/5 border border-white/10 text-xs text-white/70">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -333,7 +427,7 @@ export default function App() {
               />
             )}
 
-            {/* PHASE 3: COMPLETED RESULTS & KARAOKE PLAYER */}
+            {/* PHASE 3: COMPLETED RESULTS (AUDIO / SCRIPT VIEWER) */}
             {phase === 'done' && (
               <div className="space-y-6 animate-in fade-in zoom-in-95 duration-400">
                 {/* Back to Composer action */}
@@ -348,7 +442,9 @@ export default function App() {
                   </button>
 
                   <span className="text-xs text-white/50">
-                    Eksekusi Selesai • Model: Gemini 3.8 Flash TTS ({voice})
+                    {result?.tts_data
+                      ? `Eksekusi Selesai • Model: Gemini 3.8 Flash TTS (${voice})`
+                      : 'Naskah H-A-M-P Selesai Dibuat • Siap Digunakan'}
                   </span>
                 </div>
 
@@ -360,15 +456,31 @@ export default function App() {
                   transcribeData={result?.transcribe_data}
                 />
 
-                {/* Karaoke Subtitle Player */}
-                <KaraokePlayer
-                  audioUrl={activeAudioUrl}
-                  words={result?.transcribe_data?.words || []}
-                  scriptData={result?.script_data}
-                  titleData={result?.title_data}
-                  ttsData={result?.tts_data}
-                  transcribeData={result?.transcribe_data}
-                />
+                {/* View A: Full Audio & Karaoke Subtitle Player (when TTS audio exists) */}
+                {result?.tts_data && (
+                  <KaraokePlayer
+                    audioUrl={activeAudioUrl}
+                    words={result?.transcribe_data?.words || []}
+                    scriptData={result?.script_data}
+                    titleData={result?.title_data}
+                    ttsData={result?.tts_data}
+                    transcribeData={result?.transcribe_data}
+                  />
+                )}
+
+                {/* View B: Dedicated Script Viewer (when user generated script only, Lanjut ke TTS: OFF) */}
+                {!result?.tts_data && result?.script_data && (
+                  <ScriptViewer
+                    scriptData={result.script_data}
+                    initialVoice={voice}
+                    onProceedToTTS={handleProceedToTTS}
+                    onEditInComposer={() => {
+                      setIntent('voice_only')
+                      setPrompt(result.script_data?.tagged_text || '')
+                      setPhase('idle')
+                    }}
+                  />
+                )}
 
                 {/* Download & Export Toolbar */}
                 <DownloadToolbar

@@ -30,6 +30,10 @@ from server.schemas import (
     TitleRecommendation,
     ThumbnailConcept,
     TitleResponse,
+    ChatMessage,
+    TitleChatRequest,
+    TitleChatResponse,
+    SaveTitleRequest,
     ScriptSegment,
     ScriptResponse,
     AutoTagResponse,
@@ -233,6 +237,113 @@ def generate_titles(topic: str, count: int = 3) -> TitleResponse:
             continue
 
     raise RuntimeError(f"Gagal generate judul: {last_err}")
+
+# -------------------------------------------------------------------------
+# TAHAP 1.5: CHAT DISKUSI JUDUL / BRAINSTORMING INTERAKTIF
+# -------------------------------------------------------------------------
+SYSTEM_CHAT_TITLE_PROMPT = """Kamu adalah Creative Director & Ideation Partner konten edukasi faceless (YouTube Shorts/TikTok/Reels).
+Tugas utamamu adalah berdiskusi secara santai, asik, dan kolaboratif dengan pembuat konten untuk mematangkan ide, mencari sudut pandang (angle hook) yang unik, dan merumuskan judul video beretensi tinggi.
+
+Pedoman Komunikasi:
+1. Santai & Ramah: Berbicaralah seperti teman ngobrol kreatif dalam bahasa Indonesia yang natural, luwes, dan antusias.
+2. Responsif terhadap Sapaan: Jika pengguna hanya menyapa (seperti "halo", "hai", "pagi"), balas dengan hangat dan tanyakan topik menarik apa yang ingin dibahas hari ini. JANGAN langsung membuat rekomendasi judul jika pengguna baru sekadar menyapa!
+3. Brainstorming Mendalam:
+   - Jika pengguna melempar ide mentah atau topik umum, diskusikan 2-3 kemungkinan sudut pandang (misal: sudut pandang kontrarian/bantahan mitos, rasa cemas penonton, atau rasa penasaran cara kerja).
+   - Ajak pengguna memilih atau mengeksplorasi angle yang paling mereka sukai.
+4. Rekomendasi Judul Tajam:
+   - Ketika ide sudah mulai mengerucut, tawarkan 2-3 rekomendasi judul yang ketat berukuran 44-54 KARAKTER (dengan kata kunci utama di depan) berbasis 5 formula retensi (Numerical Specificity, Contrarian, Curiosity Gap, How Things Work, Urgency).
+   - Tuliskan jumlah karakternya.
+5. Format Rekomendasi Khusus (Agar bisa langsung dipilih di aplikasi):
+   Jika di pesanmu kamu menyertakan rekomendasi judul resmi yang siap dipilih, sertakan blok JSON di paling akhir pesanmu dengan format:
+   ```json
+   {
+     "suggested_titles": [
+       {
+         "title": "Judul 44-54 Karakter Disini",
+         "char_count": 48,
+         "formula": "Curiosity Gap",
+         "why_it_works": "Alasan singkat memikat penonton"
+       }
+     ]
+   }
+   ```
+"""
+
+def chat_title_discussion(messages: List[ChatMessage]) -> TitleChatResponse:
+    client = get_client()
+
+    contents = []
+    for m in messages:
+        role = "user" if m.role == "user" else "model"
+        contents.append({
+            "role": role,
+            "parts": [{"text": m.content}]
+        })
+
+    models_to_try = [TEXT_MODEL, TEXT_MODEL_FALLBACK]
+    last_err = None
+
+    for model_name in models_to_try:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=contents,
+                config={
+                    "system_instruction": SYSTEM_CHAT_TITLE_PROMPT,
+                    "temperature": 0.7,
+                }
+            )
+            raw_text = response.text.strip()
+
+            # Extract suggested_titles JSON if present
+            suggested_titles = []
+            clean_reply = raw_text
+            json_match = re.search(r"```(?:json)?\s*(\{[\s\S]*?\"suggested_titles\"[\s\S]*?\})\s*```", raw_text)
+            if json_match:
+                try:
+                    parsed = json.loads(json_match.group(1))
+                    for item in parsed.get("suggested_titles", []):
+                        t_title = item.get("title", "").strip()
+                        if t_title:
+                            suggested_titles.append(TitleRecommendation(
+                                title=t_title,
+                                char_count=len(t_title),
+                                formula=item.get("formula", "Curiosity Gap"),
+                                why_it_works=item.get("why_it_works", "Menarik perhatian penonton")
+                            ))
+                    # Remove the JSON codeblock from visible chat reply
+                    clean_reply = raw_text[:json_match.start()].strip()
+                except Exception:
+                    pass
+
+            return TitleChatResponse(
+                success=True,
+                reply=clean_reply,
+                suggested_titles=suggested_titles
+            )
+        except Exception as e:
+            last_err = e
+            continue
+
+    raise RuntimeError(f"Gagal memproses obrolan diskusi judul: {last_err}")
+
+def save_title_selection(title: str, formula: str = "Curiosity Gap", why_it_works: str = None, topic: str = None) -> str:
+    title_slug = slugify(title)
+    title_file = CONTENT_TITLES_DIR / f"{title_slug}.md"
+
+    md_content = f"""# Hasil Riset Judul Faceless: {title}
+*Dipilih pada: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*
+
+### Judul Terpilih (44–54 Karakter)
+- **{title}** (`{len(title)} karakter` • Formula: `{formula}`)
+  - *Mengapa efektif:* {why_it_works or 'Memicu rasa ingin tahu penonton'}
+
+### Konsep Thumbnail Sinergis
+- **Teks Layar (2–4 kata):** `{title[:20].upper()}`
+- **Visual Utama:** Ilustrasi grafis 3D kontras tinggi tanpa wajah yang menonjolkan objek utama judul.
+"""
+    title_file.write_text(md_content, encoding="utf-8")
+    return str(title_file)
 
 # -------------------------------------------------------------------------
 # 2. TAHAP 2: H-A-M-P SCRIPT GENERATION (/naskah)

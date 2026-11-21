@@ -33,6 +33,7 @@ export function MetricsBar({
   const charCount = chosenTitle.length
   const isCharValid = charCount >= 44 && charCount <= 54
 
+  const hasRealAudio = Boolean(ttsData && ttsData.duration_sec)
   const durationSec = ttsData?.duration_sec || scriptData?.estimated_duration_sec || 0
   const durationFrames = ttsData?.duration_frames || Math.ceil(durationSec * 30)
   const wordCount = transcribeData?.word_count || scriptData?.word_count || 0
@@ -73,22 +74,30 @@ export function MetricsBar({
         </div>
       </div>
 
-      {/* 2. Audio Duration & Remotion Frames */}
+      {/* 2. Audio Duration & Remotion Frames (or Estimated Reading Time) */}
       <div className="p-4 rounded-2xl bg-[rgba(22,22,26,0.72)] backdrop-blur-xl border border-white/10 shadow-lg flex flex-col justify-between">
         <div className="flex items-center justify-between text-white/50 text-xs mb-1">
           <span className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-[#5fb2f2]" />
-            Durasi Audio
+            {hasRealAudio ? 'Durasi Audio' : 'Estimasi Durasi'}
           </span>
-          <span className="text-[10px] text-[#5fb2f2] font-mono font-bold">@30 FPS</span>
+          <span className="text-[10px] text-[#5fb2f2] font-mono font-bold">
+            {hasRealAudio ? '@30 FPS' : 'Naskah'}
+          </span>
         </div>
         <div>
           <div className="text-xl font-mono font-bold text-white tabular-nums">
-            {durationSec.toFixed(1)}s
+            {hasRealAudio ? `${durationSec.toFixed(1)}s` : `~${durationSec.toFixed(0)}s`}
           </div>
           <p className="text-[10px] text-white/50 mt-0.5 flex items-center gap-1">
-            <Film className="w-3 h-3 text-[#5fb2f2]" />
-            <span>{durationFrames} frames Remotion</span>
+            {hasRealAudio ? (
+              <>
+                <Film className="w-3 h-3 text-[#5fb2f2]" />
+                <span>{durationFrames} frames Remotion</span>
+              </>
+            ) : (
+              <span>Estimasi baca @ 150 WPM</span>
+            )}
           </p>
         </div>
       </div>

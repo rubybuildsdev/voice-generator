@@ -1,0 +1,16 @@
+# Naskah H-A-M-P: Kenapa 5 Pekerjaan Ini Pasti Digantikan AI?
+*Dibuat: 2026-11-21 08:24:34 | Durasi Estimasi: ~44.8s (112 kata)*
+
+### Naskah Siap Rekam (Format 2 Kolom)
+| Waktu / Segmen | Narasi Voice-Over (Audio) | Arahan Visual & Motion | Sound Effect (SFX) |
+| :--- | :--- | :--- | :--- |
+| `00:00 - 00:04` **(Hook)** | Lima pekerjaan ini bakal musnah dalam waktu dekat <short pause> dan kalau kamu ada di daftarnya, siap-siap gigit jari! <gasp> | `[SOURCE BADGE WEF 2026] Teks list pekerjaan menyala merah terang` | *Sub-Drop / Braam* |
+| `00:04 - 00:15` **(Agitasi)** | <sigh> Jangan dikira aman cuma karena kerja kantoran. Gaji bulananmu perlahan digerus algoritma yang nggak butuh cuti, nggak kenal capek, dan jelas jauh lebih murah dari UMR kota kamu! | `[MONEY DRAIN HUD] Grafik tabungan anjlok drastis ke angka nol` | *Warning Tick* |
+| `00:15 - 00:38` **(Mekanisme)** | Pertama, penulis konten generik. Kedua, desainer grafis stok. Ketiga, customer service level satu. Keempat, penerjemah teks dasar. Dan kelima, data entry <short pause>. Kenapa mereka digantikan? Karena AI memproses pola repetitif dalam hitungan detik, sedangkan manusia butuh waktu mikir dan ngopi dulu. | `[AI WORKFLOW MATRIX] Layar terbelah menunjukkan AI bekerja 100x lebih cepat` | *Creak / Fracture sound* |
+| `00:38 - Selesai` **(Payoff)** | Solusinya? Jangan jadi pekerja repetitif. Kuasai manajemen AI atau pindah ke skill yang butuh empati tinggi. <phew> Coba ngaku, profesi kamu masuk daftar ini nggak? Tulis di komentar! | `[SMART SKILL HUD 100%] Ikon transisi dari operator ke manager AI` | *Shield Chime* |
+
+### Teks Narasi Bersih (Tanpa Tag - Subtitle):
+> Lima pekerjaan ini bakal musnah dalam waktu dekat dan kalau kamu ada di daftarnya, siap-siap gigit jari! Jangan dikira aman cuma karena kerja kantoran. Gaji bulananmu perlahan digerus algoritma yang nggak butuh cuti, nggak kenal capek, dan jelas jauh lebih murah dari UMR kota kamu! Pertama, penulis konten generik. Kedua, desainer grafis stok. Ketiga, customer service level satu. Keempat, penerjemah teks dasar. Dan kelima, data entry. Kenapa mereka digantikan? Karena AI memproses pola repetitif dalam hitungan detik, sedangkan manusia butuh waktu mikir dan ngopi dulu. Solusinya? Jangan jadi pekerja repetitif. Kuasai manajemen AI atau pindah ke skill yang butuh empati tinggi. Coba ngaku, profesi kamu masuk daftar ini nggak? Tulis di komentar!
+
+### Teks Narasi Siap TTS (Dengan Inline Vocal Tags):
+> Lima pekerjaan ini bakal musnah dalam waktu dekat <short pause> dan kalau kamu ada di daftarnya, siap-siap gigit jari! <gasp> <sigh> Jangan dikira aman cuma karena kerja kantoran. Gaji bulananmu perlahan digerus algoritma yang nggak butuh cuti, nggak kenal capek, dan jelas jauh lebih murah dari UMR kota kamu! Pertama, penulis konten generik. Kedua, desainer grafis stok. Ketiga, customer service level satu. Keempat, penerjemah teks dasar. Dan kelima, data entry <short pause>. Kenapa mereka digantikan? Karena AI memproses pola repetitif dalam hitungan detik, sedangkan manusia butuh waktu mikir dan ngopi dulu. Solusinya? Jangan jadi pekerja repetitif. Kuasai manajemen AI atau pindah ke skill yang butuh empati tinggi. <phew> Coba ngaku, profesi kamu masuk daftar ini nggak? Tulis di komentar!

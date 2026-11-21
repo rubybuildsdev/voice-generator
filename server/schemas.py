@@ -23,6 +23,25 @@ class TitleResponse(BaseModel):
     thumbnail: ThumbnailConcept
     markdown_output: str
 
+# Title Chat / Brainstorming Schemas
+class ChatMessage(BaseModel):
+    role: str = Field(..., description="'user' atau 'assistant'")
+    content: str = Field(..., description="Isi teks pesan")
+
+class TitleChatRequest(BaseModel):
+    messages: List[ChatMessage] = Field(..., description="Riwayat obrolan diskusi judul")
+
+class TitleChatResponse(BaseModel):
+    success: bool = True
+    reply: str = Field(..., description="Balasan santai dari creative partner")
+    suggested_titles: List[TitleRecommendation] = Field(default_factory=list, description="Daftar rekomendasi judul jika ada")
+
+class SaveTitleRequest(BaseModel):
+    title: str = Field(..., description="Judul yang dipilih")
+    formula: Optional[str] = Field("Curiosity Gap", description="Formula judul")
+    why_it_works: Optional[str] = Field(None, description="Alasan efektivitas judul")
+    topic: Optional[str] = Field(None, description="Topik diskusi")
+
 # Script Schemas
 class ScriptSegment(BaseModel):
     segment: str = Field(..., description="Nama babak H-A-M-P (Hook, Agitasi, Mekanisme, Payoff)")

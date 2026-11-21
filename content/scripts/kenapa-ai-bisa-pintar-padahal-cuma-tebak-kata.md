@@ -1,0 +1,16 @@
+# Naskah H-A-M-P: Kenapa AI Bisa Pintar Padahal Cuma Tebak Kata?
+*Dibuat: 2026-11-21 08:14:07 | Durasi Estimasi: ~46.4s (116 kata)*
+
+### Naskah Siap Rekam (Format 2 Kolom)
+| Waktu / Segmen | Narasi Voice-Over (Audio) | Arahan Visual & Motion | Sound Effect (SFX) |
+| :--- | :--- | :--- | :--- |
+| `00:00 - 00:04` **(Hook)** | AI secanggih ChatGPT itu <sigh> sebenernya nggak bener-bener mikir <short pause> Dia cuma mesin tebak kata paling jago di bumi. | `[TEXT MATRIX RAIN] CHATGPT = PREDICTIVE TEXT PADA STEROID` | *Sub-Drop* |
+| `00:04 - 00:15` **(Agitasi)** | <pff> Lo mungkin mikir AI punya kesadaran sendiri kayak di film sci-fi. Padahal tiap kali lo ngobrol panjang lebar, lo cuma lagi main game 'sambung kata' versi milideran rupiah. | `[SPLIT SCREEN] SCI-FI BRAIN vs GIANT SPREADSHEET MATRIX` | *Warning Tick* |
+| `00:15 - 00:38` **(Mekanisme)** | Cara kerjanya simpel tapi brutal. Berdasarkan miliaran data teks, AI ngitung probabilitas matematika kata apa yang paling masuk akal buat nyambungin kalimat lo <short pause> Kalau kata pertama 'kucing', sistem langsung nge-scan jutaan dokumen buat nentuin kata 'meong' atau 'tidur' yang punya bobot statistik paling tinggi. | `[3D PROBABILITY TREE GRAPH] NODES GLOWING CONNECTIONS 10 BILLION PARAMETERS` | *Digital Whoosh* |
+| `00:38 - Selesai` **(Payoff)** | Makanya, <exhales> jangan telan mentah-mentah semua jawaban AI ya. Coba komen di bawah, lebih sering mana: lo nganggep AI sebagai asisten jenius atau sekadar mesin autocomplete sok tahu? | `[UI POLL OVERLAY] GENIUS ASISTEN VS AUTOCOMPLETE SOK TAHU` | *Shield Chime* |
+
+### Teks Narasi Bersih (Tanpa Tag - Subtitle):
+> AI secanggih ChatGPT itu sebenernya nggak bener-bener mikir. Dia cuma mesin tebak kata paling jago di bumi. Lo mungkin mikir AI punya kesadaran sendiri kayak di film sci-fi. Padahal tiap kali lo ngobrol panjang lebar, lo cuma lagi main game sambung kata versi milideran rupiah. Cara kerjanya simpel tapi brutal. Berdasarkan miliaran data teks, AI ngitung probabilitas matematika kata apa yang paling masuk akal buat nyambungin kalimat lo. Kalau kata pertama kucing, sistem langsung nge-scan jutaan dokumen buat nentuin kata meong atau tidur yang punya bobot statistik paling tinggi. Makanya, jangan telan mentah-mentah semua jawaban AI ya. Coba komen di bawah, lebih sering mana: lo nganggep AI sebagai asisten jenius atau sekadar mesin autocomplete sok tahu?
+
+### Teks Narasi Siap TTS (Dengan Inline Vocal Tags):
+> AI secanggih ChatGPT itu <sigh> sebenernya nggak bener-bener mikir <short pause> Dia cuma mesin tebak kata paling jago di bumi. <pff> Lo mungkin mikir AI punya kesadaran sendiri kayak di film sci-fi. Padahal tiap kali lo ngobrol panjang lebar, lo cuma lagi main game sambung kata versi milideran rupiah. Cara kerjanya simpel tapi brutal. Berdasarkan miliaran data teks, AI ngitung probabilitas matematika kata apa yang paling masuk akal buat nyambungin kalimat lo <short pause> Kalau kata pertama kucing, sistem langsung nge-scan jutaan dokumen buat nentuin kata meong atau tidur yang punya bobot statistik paling tinggi. Makanya, <exhales> jangan telan mentah-mentah semua jawaban AI ya. Coba komen di bawah, lebih sering mana: lo nganggep AI sebagai asisten jenius atau sekadar mesin autocomplete sok tahu?

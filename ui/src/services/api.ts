@@ -7,6 +7,8 @@ import {
   HistoryItem,
   SSELogEvent,
   WordTimestamp,
+  ChatMessage,
+  TitleChatResponse,
 } from '../types/studio'
 
 const API_BASE = '/api'
@@ -53,6 +55,30 @@ export async function generateTitles(topic: string, count = 3): Promise<TitleRes
   })
   if (!res.ok) {
     throw new Error(`Failed to generate titles: ${res.statusText}`)
+  }
+  return res.json()
+}
+
+export async function sendTitleChatMessage(messages: ChatMessage[]): Promise<TitleChatResponse> {
+  const res = await fetch(`${API_BASE}/titles/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages }),
+  })
+  if (!res.ok) {
+    throw new Error(`Gagal mengirim pesan chat diskusi: ${res.statusText}`)
+  }
+  return res.json()
+}
+
+export async function saveSelectedTitle(title: string, formula?: string, whyItWorks?: string): Promise<{ success: boolean; saved_path: string }> {
+  const res = await fetch(`${API_BASE}/titles/save`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, formula, why_it_works: whyItWorks }),
+  })
+  if (!res.ok) {
+    throw new Error(`Gagal menyimpan judul: ${res.statusText}`)
   }
   return res.json()
 }
@@ -155,7 +181,9 @@ export async function executePipelineStream(
         if (done) break
 
         buffer += decoder.decode(value, { stream: true })
-        const chunks = buffer.split('\n\n')
+        // Normalize CRLF (\r\n) to LF (\n) to ensure proper SSE message splitting across all OS
+        const normalized = buffer.replace(/\r\n/g, '\n')
+        const chunks = normalized.split('\n\n')
         buffer = chunks.pop() || ''
 
         for (const chunk of chunks) {
@@ -164,10 +192,11 @@ export async function executePipelineStream(
           let dataStr = ''
 
           for (const line of lines) {
-            if (line.startsWith('event:')) {
-              eventType = line.slice(6).trim()
-            } else if (line.startsWith('data:')) {
-              dataStr += line.slice(5).trim()
+            const trimmed = line.trim()
+            if (trimmed.startsWith('event:')) {
+              eventType = trimmed.slice(6).trim()
+            } else if (trimmed.startsWith('data:')) {
+              dataStr += trimmed.slice(5).trim()
             }
           }
 
@@ -182,6 +211,9 @@ export async function executePipelineStream(
             else if (parsed.step === 'script') stepNum = 3
             else if (parsed.step === 'tts') stepNum = 4
             else if (parsed.step === 'transcribe') stepNum = 5
+            else if (parsed.step === 'init') {
+              stepNum = params.intent === 'script' ? 3 : params.intent === 'voice_only' ? 4 : 1
+            }
 
             // Extract payloads
             if (parsed.payload) {

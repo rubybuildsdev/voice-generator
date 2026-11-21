@@ -36,13 +36,16 @@ async def execute_pipeline_generator(
             else:
                 effective_intent = "title"
 
+        initial_step = "script" if effective_intent == "script" else ("tts" if effective_intent == "voice_only" else ("title" if effective_intent == "title" else "init"))
+        initial_progress = 35 if effective_intent == "script" else (65 if effective_intent == "voice_only" else (15 if effective_intent == "title" else 5))
+
         yield {
             "event": "log",
             "data": json.dumps({
-                "step": "init",
+                "step": initial_step,
                 "status": "running",
                 "message": f"Pipeline dimulai. Mode: {effective_intent.upper()} (Suara: {voice})",
-                "progress": 5
+                "progress": initial_progress
             })
         }
         await asyncio.sleep(0.1)

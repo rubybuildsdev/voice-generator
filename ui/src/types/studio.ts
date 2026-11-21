@@ -47,6 +47,17 @@ export interface TitleResponse {
   markdown_output: string
 }
 
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export interface TitleChatResponse {
+  success: boolean
+  reply: string
+  suggested_titles: TitleRecommendation[]
+}
+
 export interface ScriptSegment {
   segment: string
   time_range: string

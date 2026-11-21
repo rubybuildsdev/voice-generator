@@ -171,19 +171,21 @@ export function DownloadToolbar({
             </button>
           )}
 
-          {/* Copy Remotion Timeline JSON */}
-          <button
-            type="button"
-            onClick={copyRemotionConfig}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-              copiedRemotion
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                : 'bg-[#5fb2f2]/15 text-[#5fb2f2] hover:bg-[#5fb2f2]/25 border border-[#5fb2f2]/30'
-            }`}
-          >
-            {copiedRemotion ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copiedRemotion ? 'Tersalin!' : 'Copy Remotion JSON'}</span>
-          </button>
+          {/* Copy Remotion Timeline JSON (Only when audio generated) */}
+          {ttsData && (
+            <button
+              type="button"
+              onClick={copyRemotionConfig}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                copiedRemotion
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                  : 'bg-[#5fb2f2]/15 text-[#5fb2f2] hover:bg-[#5fb2f2]/25 border border-[#5fb2f2]/30'
+              }`}
+            >
+              {copiedRemotion ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copiedRemotion ? 'Tersalin!' : 'Copy Remotion JSON'}</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
