@@ -1,47 +1,56 @@
-from fastapi import APIRouter, HTTPException
-from server.schemas import TTSRequest, TTSResponse
-from server.config import AVAILABLE_VOICES, OFFICIAL_VOCAL_TAGS
-from server.services import gemini_service
+"""Endpoint Text-to-Speech, katalog 31 suara studio, dan daftar vocal tags."""
 
+from __future__ import annotations
+
+import asyncio
+import logging
+from typing import Any
+
+from fastapi import APIRouter, HTTPException
+
+from server.config import (
+    AVAILABLE_VOICES,
+    DEFAULT_VOICE,
+    OFFICIAL_VOCAL_TAGS,
+    UnsafePathError,
+)
+from server.schemas import TTSRequest, TTSResponse
+from server.services.gemini_client import GeminiConfigError
+from server.services.tts_service import generate_tts
+
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/tts", tags=["TTS"])
 
+
 @router.post("/generate", response_model=TTSResponse)
-async def generate_tts_endpoint(req: TTSRequest):
-    """
-    Sintesis Audio Voice-Over dengan Gemini 3.8 Flash TTS
-    Mengonversi naskah bersuara ke format audio WAV mono 24 kHz berkualitas tinggi.
-    Otomatis menghitung durasi audio presisi dan total frames untuk Remotion @ 30 FPS.
-    """
-    if not req.text.strip():
-        raise HTTPException(status_code=400, detail="Teks naskah audio tidak boleh kosong.")
+async def api_generate_tts(req: TTSRequest) -> TTSResponse:
     try:
-        result = gemini_service.generate_tts(
-            text=req.text,
-            voice=req.voice or "Kore",
-            filename=req.filename,
-            style=req.style
+        return await asyncio.to_thread(
+            generate_tts, req.text, req.voice, req.filename, req.style
         )
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except UnsafePathError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except GeminiConfigError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Gagal mensintesis audio TTS")
+        raise HTTPException(
+            status_code=500, detail="Gagal menghasilkan audio voice-over."
+        ) from exc
+
 
 @router.get("/voices")
-async def get_voices_endpoint():
-    """
-    Daftar profil suara resmi Gemini TTS beserta karakteristik tone, gender, dan gaya vokal.
-    """
+async def api_list_voices() -> dict[str, Any]:
     return {
-        "success": True,
+        "default_voice": DEFAULT_VOICE,
+        "count": len(AVAILABLE_VOICES),
         "voices": AVAILABLE_VOICES,
-        "default_voice": "Kore"
     }
 
+
 @router.get("/tags")
-async def get_tags_endpoint():
-    """
-    Daftar resmi Google Gemini Inline Vocal Tags yang didukung.
-    """
+async def api_list_tags() -> dict[str, Any]:
     return {
-        "success": True,
-        "tags": OFFICIAL_VOCAL_TAGS
+        "count": len(OFFICIAL_VOCAL_TAGS),
+        "tags": OFFICIAL_VOCAL_TAGS,
     }

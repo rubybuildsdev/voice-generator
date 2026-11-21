@@ -1,39 +1,53 @@
-from fastapi import APIRouter, HTTPException
-from server.schemas import ScriptRequest, ScriptResponse, AutoTagRequest, AutoTagResponse
-from server.services import gemini_service
+"""Endpoint generasi naskah H-A-M-P dan auto-tagging vokal."""
 
+from __future__ import annotations
+
+import asyncio
+import logging
+
+from fastapi import APIRouter, HTTPException
+
+from server.schemas import (
+    AutoTagRequest,
+    AutoTagResponse,
+    ScriptRequest,
+    ScriptResponse,
+)
+from server.services.gemini_client import GeminiConfigError
+from server.services.script_service import auto_tag_text, generate_script
+
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/scripts", tags=["Scripts"])
 
+
 @router.post("/generate", response_model=ScriptResponse)
-async def generate_script_endpoint(req: ScriptRequest):
-    """
-    Generate Naskah H-A-M-P Siap Rekam dengan Auto Inline Vocal Tags
-    Merancang naskah percakapan edukatif santai (Hook 0-3s, Agitasi 4-15s, Mekanisme 15-38s, Payoff 38s-selesai)
-    lengkap dengan Visual Receipts, SFX, dan inline vocal tags resmi Gemini TTS.
-    """
-    if not req.title.strip():
-        raise HTTPException(status_code=400, detail="Judul video tidak boleh kosong.")
+async def api_generate_script(req: ScriptRequest) -> ScriptResponse:
     try:
-        result = gemini_service.generate_hamp_script(
-            title=req.title,
-            topic_context=req.topic_context or "",
-            voice_style=req.voice_style or "conversational",
-            auto_tag=req.auto_tag if req.auto_tag is not None else True
+        return await asyncio.to_thread(
+            generate_script,
+            req.title,
+            req.topic_context,
+            req.voice_style,
+            req.auto_tag,
+            req.custom_instructions,
         )
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    except GeminiConfigError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Gagal menghasilkan naskah H-A-M-P")
+        raise HTTPException(
+            status_code=500, detail="Gagal menghasilkan naskah video."
+        ) from exc
+
 
 @router.post("/auto-tag", response_model=AutoTagResponse)
-async def auto_tag_endpoint(req: AutoTagRequest):
-    """
-    Menyisipkan Inline Vocal Tags resmi Gemini secara otomatis ke naskah eksternal/mentah.
-    Tag disisipkan secara natural dan proporsional (3-6 tag per naskah).
-    """
-    if not req.text.strip():
-        raise HTTPException(status_code=400, detail="Teks naskah tidak boleh kosong.")
+async def api_auto_tag(req: AutoTagRequest) -> AutoTagResponse:
     try:
-        result = gemini_service.auto_tag_text(req.text)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return await asyncio.to_thread(auto_tag_text, req.text)
+    except GeminiConfigError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Gagal menyisipkan vocal tags")
+        raise HTTPException(
+            status_code=500, detail="Gagal menyisipkan vocal tags pada naskah."
+        ) from exc

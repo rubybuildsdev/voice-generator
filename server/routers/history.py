@@ -1,43 +1,33 @@
-from fastapi import APIRouter
-from server.config import GEMINI_API_KEY, TEXT_MODEL, TTS_MODEL, TRANSCRIBE_MODEL, AVAILABLE_VOICES, OFFICIAL_VOCAL_TAGS
-from server.services import gemini_service
+"""Endpoint health-check model aktif dan riwayat aset studio."""
 
-router = APIRouter(prefix="/api", tags=["System & History"])
+from __future__ import annotations
+
+import asyncio
+from typing import Any
+
+from fastapi import APIRouter, Query
+
+from server.config import AVAILABLE_VOICES, OFFICIAL_VOCAL_TAGS
+from server.schemas import HistoryItem
+from server.services.gemini_client import detect_active_model, is_configured
+from server.services.history_service import get_history_items
+
+router = APIRouter(prefix="/api", tags=["System"])
+
 
 @router.get("/health")
-async def health_check():
-    """
-    Status server, kesiapan kunci API Gemini, dan auto-deteksi model aktif yang bisa dipanggil oleh API Key.
-    """
-    has_key = bool(GEMINI_API_KEY and len(GEMINI_API_KEY) > 10)
-    detected = gemini_service.detect_active_model() if has_key else {
-        "model_id": TEXT_MODEL,
-        "display_name": "API Key Missing",
-        "status": "unconfigured"
-    }
+async def api_health(refresh: bool = Query(default=False)) -> dict[str, Any]:
+    detected = await asyncio.to_thread(detect_active_model, refresh)
     return {
-        "status": "online",
-        "service": "AI Faceless Video Production Engine",
-        "gemini_api_configured": has_key,
+        "status": "ok",
+        "version": "3.0.0",
+        "gemini_api_configured": is_configured(),
         "detected_model": detected,
-        "models": {
-            "text_model": detected.get("model_id", TEXT_MODEL),
-            "display_name": detected.get("display_name", "Gemini 3.8 Flash"),
-            "tts_model": TTS_MODEL,
-            "transcribe_model": TRANSCRIBE_MODEL
-        },
         "voices_count": len(AVAILABLE_VOICES),
-        "tags_count": len(OFFICIAL_VOCAL_TAGS)
+        "tags_count": len(OFFICIAL_VOCAL_TAGS),
     }
 
-@router.get("/history")
-async def list_history():
-    """
-    Riwayat file audio dan subtitle yang pernah di-generate sebelumnya di workspace.
-    """
-    items = gemini_service.get_history_items()
-    return {
-        "success": True,
-        "total": len(items),
-        "items": items
-    }
+
+@router.get("/history", response_model=list[HistoryItem])
+async def api_history(limit: int = Query(default=50, ge=1, le=200)) -> list[HistoryItem]:
+    return await asyncio.to_thread(get_history_items, limit)

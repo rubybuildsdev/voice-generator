@@ -1,94 +1,109 @@
-from typing import List, Optional, Dict, Any
+"""Skema Pydantic v2 untuk kontrak API Mosaic Voice Studio."""
+
+from __future__ import annotations
+
+from typing import Literal
 from pydantic import BaseModel, Field
 
-# Title Schemas
+
+# --- Titles ---
 class TitleRequest(BaseModel):
-    topic: str = Field(..., description="Topik kasar, data, ringkasan berita, atau artikel teknologi")
-    count: int = Field(3, description="Jumlah rekomendasi judul (default 3)")
+    topic: str = Field(..., min_length=2, max_length=500)
+    count: int = Field(default=3, ge=1, le=10)
+
 
 class TitleRecommendation(BaseModel):
-    title: str = Field(..., description="Judul tajam 44-54 karakter")
-    char_count: int = Field(..., description="Jumlah karakter judul")
-    formula: str = Field(..., description="Nama formula retensi (contoh: Numerical Specificity)")
-    why_it_works: str = Field(..., description="Alasan psikologis mengapa judul ini memikat penonton")
+    title: str
+    char_count: int
+    formula: str
+    why_it_works: str
+
 
 class ThumbnailConcept(BaseModel):
-    screen_text: str = Field(..., description="Teks layar 2-4 kata kontras tinggi")
-    visual_concept: str = Field(..., description="Deskripsi visual grafis tanpa wajah")
+    screen_text: str
+    visual_concept: str
+
 
 class TitleResponse(BaseModel):
-    success: bool = True
     topic: str
-    recommendations: List[TitleRecommendation]
-    thumbnail: ThumbnailConcept
-    markdown_output: str
+    recommendations: list[TitleRecommendation]
+    thumbnail_concept: ThumbnailConcept
+    saved_path: str | None = None
 
-# Title Chat / Brainstorming Schemas
+
 class ChatMessage(BaseModel):
-    role: str = Field(..., description="'user' atau 'assistant'")
-    content: str = Field(..., description="Isi teks pesan")
+    role: Literal["user", "assistant"]
+    content: str = Field(..., min_length=1, max_length=4000)
+
 
 class TitleChatRequest(BaseModel):
-    messages: List[ChatMessage] = Field(..., description="Riwayat obrolan diskusi judul")
+    messages: list[ChatMessage] = Field(..., min_length=1, max_length=30)
+
 
 class TitleChatResponse(BaseModel):
-    success: bool = True
-    reply: str = Field(..., description="Balasan santai dari creative partner")
-    suggested_titles: List[TitleRecommendation] = Field(default_factory=list, description="Daftar rekomendasi judul jika ada")
+    reply: str
+    suggested_titles: list[TitleRecommendation] = Field(default_factory=list)
+
 
 class SaveTitleRequest(BaseModel):
-    title: str = Field(..., description="Judul yang dipilih")
-    formula: Optional[str] = Field("Curiosity Gap", description="Formula judul")
-    why_it_works: Optional[str] = Field(None, description="Alasan efektivitas judul")
-    topic: Optional[str] = Field(None, description="Topik diskusi")
+    title: str = Field(..., min_length=2, max_length=300)
+    formula: str = Field(default="Custom", max_length=150)
+    why_it_works: str = Field(default="", max_length=1000)
 
-# Script Schemas
+
+class SaveTitleResponse(BaseModel):
+    title: str
+    saved_path: str
+
+
+# --- Scripts ---
 class ScriptSegment(BaseModel):
-    segment: str = Field(..., description="Nama babak H-A-M-P (Hook, Agitasi, Mekanisme, Payoff)")
-    time_range: str = Field(..., description="Rentang waktu detik (misal 00:00 - 00:04)")
-    narration: str = Field(..., description="Teks narasi segmen dengan inline vocal tags")
-    visual_receipt: str = Field(..., description="Arahan visual bukti otentik [PHONE CUTAWAY]")
-    sfx: str = Field(..., description="Sound effect pendukung")
+    segment: str
+    time_range: str
+    narration: str
+    visual_receipt: str
+    sfx: str
+
 
 class ScriptRequest(BaseModel):
-    title: str = Field(..., description="Judul video terpilih")
-    topic_context: Optional[str] = Field(None, description="Konteks fakta tambahan atau catatan riset")
-    voice_style: Optional[str] = Field("conversational", description="Gaya tutur naskah")
-    auto_tag: Optional[bool] = Field(True, description="Sisipkan inline vocal tags resmi secara otomatis")
-    custom_instructions: Optional[str] = Field(None, description="Instruksi tambahan jika ada")
+    title: str = Field(..., min_length=2, max_length=300)
+    topic_context: str = Field(default="", max_length=2000)
+    voice_style: str = Field(default="conversational", max_length=80)
+    auto_tag: bool = True
+    custom_instructions: str = Field(default="", max_length=1000)
+
 
 class ScriptResponse(BaseModel):
-    success: bool = True
     title: str
     slug: str
-    breakdown: List[ScriptSegment]
+    breakdown: list[ScriptSegment]
     clean_text: str
     tagged_text: str
     word_count: int
     estimated_duration_sec: float
-    saved_path: Optional[str] = None
+    saved_path: str
     markdown_table: str
 
-# Auto Tag Schemas
+
 class AutoTagRequest(BaseModel):
-    text: str = Field(..., description="Teks naskah mentah tanpa vocal tags")
+    text: str = Field(..., min_length=5, max_length=10000)
+
 
 class AutoTagResponse(BaseModel):
-    success: bool = True
     original_text: str
     tagged_text: str
-    tag_count: int
-    detected_tags: List[str]
+    tags_inserted: int
 
-# TTS Schemas
+
+# --- TTS ---
 class TTSRequest(BaseModel):
-    text: str = Field(..., description="Teks naskah lengkap (disarankan dengan inline vocal tags)")
-    voice: Optional[str] = Field("Kore", description="Nama profil suara Gemini (Kore, Fola, Puck, dll.)")
-    filename: Optional[str] = Field(None, description="Nama file output kustom tanpa .wav")
-    style: Optional[str] = Field(None, description="Gaya ekspresi vokal tambahan")
+    text: str = Field(..., min_length=2, max_length=10000)
+    voice: str = Field(default="Kore", max_length=50)
+    filename: str | None = Field(default=None, max_length=120)
+    style: str = Field(default="", max_length=200)
+
 
 class TTSResponse(BaseModel):
-    success: bool = True
     filename: str
     audio_url: str
     voice: str
@@ -97,57 +112,62 @@ class TTSResponse(BaseModel):
     file_size_bytes: int
     sample_rate: int
     primary_path: str
-    mirror_path: Optional[str] = None
 
-# Transcribe Schemas
+
+# --- Transcribe ---
 class WordTimestamp(BaseModel):
     text: str
     startSec: float
     endSec: float
 
+
 class TranscribeRequest(BaseModel):
-    audio_file: Optional[str] = Field(None, description="Nama file di output/audio atau path lengkap")
+    audio_file: str = Field(..., min_length=1, max_length=200)
+
 
 class TranscribeResponse(BaseModel):
-    success: bool = True
     filename: str
-    words: List[WordTimestamp]
+    words: list[WordTimestamp]
     vtt_content: str
     vtt_url: str
     json_url: str
     word_count: int
     duration_sec: float
 
-# Pipeline Schemas
+
+# --- Pipeline & History ---
+IntentType = Literal["auto", "title", "script", "voice_only", "full"]
+
+
 class PipelineRequest(BaseModel):
-    intent: Optional[str] = Field("auto", description="auto, title, script, voice_only, atau full")
-    prompt: str = Field(..., description="Input teks prompt, topik, data, atau naskah")
-    title: Optional[str] = Field(None, description="Judul video jika sudah ditentukan")
-    script_text: Optional[str] = Field(None, description="Naskah langsung jika bypass title")
-    voice: Optional[str] = Field("Kore", description="Profil suara pilihan")
-    auto_tag: Optional[bool] = Field(True, description="Sisipkan inline vocal tags pada naskah")
-    auto_proceed: Optional[bool] = Field(True, description="Lanjut otomatis sampai tahap transkripsi")
+    intent: IntentType = "auto"
+    prompt: str = Field(..., min_length=2, max_length=10000)
+    title: str | None = Field(default=None, max_length=300)
+    script_text: str | None = Field(default=None, max_length=10000)
+    voice: str = Field(default="Kore", max_length=50)
+    auto_tag: bool = True
+    auto_proceed: bool = True
+
 
 class PipelineResponse(BaseModel):
-    success: bool = True
     intent: str
-    title_data: Optional[TitleResponse] = None
-    script_data: Optional[ScriptResponse] = None
-    tts_data: Optional[TTSResponse] = None
-    transcribe_data: Optional[TranscribeResponse] = None
+    title_data: TitleResponse | None = None
+    script_data: ScriptResponse | None = None
+    tts_data: TTSResponse | None = None
+    transcribe_data: TranscribeResponse | None = None
     execution_time_sec: float
 
-# History Schemas
+
 class HistoryItem(BaseModel):
     id: str
-    type: str
+    type: Literal["audio", "script", "title"]
     name: str
-    title: Optional[str] = None
+    title: str
     created_at: str
-    file_size_bytes: Optional[int] = None
-    duration_sec: Optional[float] = None
-    voice: Optional[str] = None
-    audio_url: Optional[str] = None
-    json_url: Optional[str] = None
-    vtt_url: Optional[str] = None
+    file_size_bytes: int
+    duration_sec: float | None = None
+    voice: str | None = None
+    audio_url: str | None = None
+    json_url: str | None = None
+    vtt_url: str | None = None
     has_transcript: bool = False
