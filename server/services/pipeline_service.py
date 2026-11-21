@@ -1,4 +1,4 @@
-"""Orkestrator pipeline 4 tahap (Title -> Script -> TTS -> Transcribe) bebas cacat logika."""
+"""Orkestrator studio untuk mode Auto, Title, Script, Voice, dan Transcribe."""
 
 from __future__ import annotations
 
@@ -30,28 +30,32 @@ _VOCAL_TAG_TOKENS = tuple(item["tag"] for item in OFFICIAL_VOCAL_TAGS)
 
 
 def resolve_intent(req: PipelineRequest) -> str:
-    """Menentukan intent efektif secara deterministik tanpa cabang redundan."""
+    """Menentukan intent efektif secara deterministik."""
     if req.intent != "auto":
         return req.intent
 
     text = (req.script_text or req.prompt or "").strip()
+    if text.lower().endswith(".wav") and " " not in text:
+        return "transcribe"
+
     has_vocal_tag = any(tag in text for tag in _VOCAL_TAG_TOKENS)
     word_count = len(text.split())
     if has_vocal_tag or word_count > 40:
         return "voice_only"
-    return "full"
+    return "title"
 
 
 def compute_steps(effective_intent: str, auto_proceed: bool) -> list[str]:
-    """Menentukan daftar tahap yang benar-benar akan dijalankan sesuai intent dan auto_proceed."""
+    """Menentukan daftar tahap yang dijalankan sesuai mode."""
     if effective_intent == "title":
         return ["title", "script", "tts", "transcribe"] if auto_proceed else ["title"]
     if effective_intent == "script":
         return ["script", "tts", "transcribe"] if auto_proceed else ["script"]
     if effective_intent == "voice_only":
         return ["tts", "transcribe"]
-    # full
-    return ["title", "script", "tts", "transcribe"]
+    if effective_intent == "transcribe":
+        return ["transcribe"]
+    return ["title"]
 
 
 def _sse_event(event: str, payload: dict[str, Any]) -> dict[str, str]:
@@ -60,7 +64,7 @@ def _sse_event(event: str, payload: dict[str, Any]) -> dict[str, str]:
 
 
 async def stream_pipeline(req: PipelineRequest) -> AsyncIterator[dict[str, str]]:
-    """Menjalankan pipeline produksi secara non-blocking dan mengalirkan event SSE."""
+    """Menjalankan tahap produksi secara non-blocking dan mengalirkan event SSE."""
     started_at = time.perf_counter()
     effective_intent = resolve_intent(req)
     steps = compute_steps(effective_intent, req.auto_proceed)
@@ -71,7 +75,7 @@ async def stream_pipeline(req: PipelineRequest) -> AsyncIterator[dict[str, str]]
         {
             "step": "init",
             "stage": "init",
-            "message": f"Memulai pipeline mode '{effective_intent}' ({total_steps} tahap)...",
+            "message": f"Memulai mode '{effective_intent}' ({total_steps} tahap)...",
             "progress": 5,
             "steps": steps,
         },
@@ -119,7 +123,7 @@ async def stream_pipeline(req: PipelineRequest) -> AsyncIterator[dict[str, str]]
                 {
                     "step": "script",
                     "stage": "script",
-                    "message": "Menyusun naskah H-A-M-P & vocal tagging...",
+                    "message": "Menyusun naskah H-A-M-P...",
                     "progress": int((completed / total_steps) * 100),
                 },
             )
@@ -179,17 +183,18 @@ async def stream_pipeline(req: PipelineRequest) -> AsyncIterator[dict[str, str]]
                 },
             )
 
-        if "transcribe" in steps and tts_data is not None:
+        if "transcribe" in steps:
+            target_audio = tts_data.filename if tts_data is not None else req.prompt.strip()
             yield _sse_event(
                 "step_start",
                 {
                     "step": "transcribe",
                     "stage": "transcribe",
-                    "message": "Mengekstrak word-level timestamps & subtitle WebVTT...",
+                    "message": f"Mengekstrak word-level timestamps ({target_audio})...",
                     "progress": int((completed / total_steps) * 100),
                 },
             )
-            transcribe_data = await asyncio.to_thread(transcribe_audio, tts_data.filename)
+            transcribe_data = await asyncio.to_thread(transcribe_audio, target_audio)
             completed += 1
             yield _sse_event(
                 "step_complete",
@@ -216,7 +221,7 @@ async def stream_pipeline(req: PipelineRequest) -> AsyncIterator[dict[str, str]]
             {
                 "step": "done",
                 "stage": "done",
-                "message": f"Pipeline selesai dalam {elapsed} detik.",
+                "message": f"Selesai dalam {elapsed} detik.",
                 "progress": 100,
                 "payload": final_response.model_dump(),
             },
@@ -228,14 +233,14 @@ async def stream_pipeline(req: PipelineRequest) -> AsyncIterator[dict[str, str]]
             {
                 "step": "error",
                 "stage": "error",
-                "message": "Terjadi kesalahan saat memproses pipeline. Periksa konfigurasi API key dan log server.",
+                "message": "Terjadi kesalahan saat memproses permintaan. Periksa input dan log server.",
                 "progress": 0,
             },
         )
 
 
 async def run_pipeline_sync(req: PipelineRequest) -> PipelineResponse:
-    """Menjalankan pipeline non-streaming dan mengembalikan PipelineResponse utuh."""
+    """Menjalankan tahap produksi non-streaming."""
     started_at = time.perf_counter()
     effective_intent = resolve_intent(req)
     steps = compute_steps(effective_intent, req.auto_proceed)
@@ -272,8 +277,9 @@ async def run_pipeline_sync(req: PipelineRequest) -> PipelineResponse:
                 tts_source = tagged_res.tagged_text
         tts_data = await asyncio.to_thread(generate_tts, tts_source, req.voice, current_title)
 
-    if "transcribe" in steps and tts_data is not None:
-        transcribe_data = await asyncio.to_thread(transcribe_audio, tts_data.filename)
+    if "transcribe" in steps:
+        target_audio = tts_data.filename if tts_data is not None else req.prompt.strip()
+        transcribe_data = await asyncio.to_thread(transcribe_audio, target_audio)
 
     return PipelineResponse(
         intent=effective_intent,

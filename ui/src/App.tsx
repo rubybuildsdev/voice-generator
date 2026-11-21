@@ -1,9 +1,9 @@
 import * as React from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { History, MessageSquare } from "lucide-react"
+import { Layers, Sparkles } from "lucide-react"
 
-import { HistoryDrawer } from "./components/HistoryDrawer"
+import { BrainstormPanel } from "./components/BrainstormPanel"
 import { KaraokePlayer } from "./components/KaraokePlayer"
 import { MosaicSky, type SkyMixState } from "./components/MosaicSky"
 import {
@@ -14,11 +14,28 @@ import {
   type MosaicIconName,
 } from "./components/PixelFont"
 import { ScriptViewer } from "./components/ScriptViewer"
-import { TitleChatDrawer } from "./components/TitleChatDrawer"
-import { AVAILABLE_VOICES, DEFAULT_VOICE, STUDIO_PROMPTS } from "./constants/voices"
+import { StudioHubModal } from "./components/StudioHubModal"
+import { AVAILABLE_VOICES, STUDIO_PROMPTS } from "./constants/voices"
 import { useStudioPipeline } from "./hooks/useStudioPipeline"
-import { fetchTranscriptWords } from "./services/api"
-import type { HistoryItem, IntentType, MosaicAccent } from "./types/studio"
+import {
+  deleteChatSession,
+  deleteHistoryAsset,
+  fetchHealth,
+  fetchHistory,
+  fetchHistoryAssetContent,
+  fetchTranscriptWords,
+  loadChatSessions,
+  loadStudioSettings,
+  saveChatSession,
+  saveStudioSettings,
+} from "./services/api"
+import type {
+  ChatSession,
+  HistoryItem,
+  IntentType,
+  MosaicAccent,
+  StudioSettings,
+} from "./types/studio"
 
 const ACCENTS: Record<
   MosaicAccent,
@@ -29,27 +46,27 @@ const ACCENTS: Record<
   lime: { a1: "#efffc4", a2: "#c4f26a", a3: "#8fcf2e", glow: "rgba(143,207,46,.38)", ink: "#1c2a05", gl: [0.72, 0.95, 0.38] },
 }
 
-const MODE_CHIPS: { id: IntentType; label: string; icon: MosaicIconName }[] = [
-  { id: "auto", label: "Auto", icon: "spark" },
-  { id: "full", label: "Full Pipeline", icon: "rocket" },
-  { id: "title", label: "Title", icon: "chat" },
-  { id: "script", label: "Script", icon: "code" },
-  { id: "voice_only", label: "Voice Only", icon: "wave" },
+const MODE_OPTIONS: { id: IntentType; label: string; desc: string; icon: MosaicIconName }[] = [
+  { id: "auto", label: "Auto", desc: "Deteksi otomatis dari prompt", icon: "spark" },
+  { id: "title", label: "Title", desc: "Riset 3 judul + thumbnail", icon: "chat" },
+  { id: "script", label: "Script", desc: "Naskah H-A-M-P terstruktur", icon: "code" },
+  { id: "voice_only", label: "Voice", desc: "Sintesis suara 24 kHz WAV", icon: "wave" },
+  { id: "transcribe", label: "Transcribe", desc: "WAV ke VTT & JSON karaoke", icon: "eye" },
 ]
 
 const STEP_LABELS: Record<string, string> = {
   title: "Meriset formula judul viral & konsep thumbnail",
-  script: "Menyusun naskah H-A-M-P + 16 inline vocal tags",
+  script: "Menyusun naskah H-A-M-P + vocal tags",
   tts: "Mensintesis audio studio 24 kHz Mono WAV",
   transcribe: "Mengekstrak word-level timestamps & WebVTT",
 }
 
 const FEATURES: { icon: MosaicIconName; title: string; body: string }[] = [
-  { icon: "spark", title: "Satu kalimat, full aset", body: "Tulis ide topik mentah atau tempel naskah jadi. Engine otomatis mendeteksi intent dan menjalankan tahap yang tepat." },
-  { icon: "code", title: "Kerangka H-A-M-P", body: "Naskah dibagi otomatis ke Hook, Agitasi, Mekanisme, dan Payoff lengkap dengan arahan visual receipt serta SFX." },
+  { icon: "spark", title: "Brainstorm Inline", body: "Diskusi formula judul langsung di kartu composer utama lengkap dengan riwayat sesi chat yang tersimpan." },
+  { icon: "code", title: "Kerangka H-A-M-P", body: "Naskah dibagi otomatis ke Hook, Agitasi, Mekanisme, dan Payoff lengkap dengan visual receipt dan Auto-Tag." },
   { icon: "wave", title: "31 Suara Studio Gemini", body: "Sintesis 24 kHz Mono WAV dengan 16 inline vocal tags seperti <short pause>, <breath>, dan <emphasis>." },
-  { icon: "eye", title: "Karaoke Word-Level", body: "Setiap kata dipetakan presisi ke startSec/endSec dalam format JSON dan WebVTT siap pakai untuk Remotion." },
-  { icon: "chat", title: "Title Brainstorm", body: "Diskusi sudut pandang hook lewat drawer chat interaktif lalu simpan judul terpilih langsung ke content/titles/." },
+  { icon: "eye", title: "Karaoke Word-Level", body: "Setiap kata dipetakan presisi dan dikalibrasi terhadap durasi WAV asli dalam format JSON dan WebVTT." },
+  { icon: "chat", title: "Studio Hub Terpusat", body: "Kelola History Assets (Audio, Script, Title), History Chat, dan Pengaturan tema dalam satu modal glass." },
   { icon: "rocket", title: "Siap Produksi & Aman", body: "Pipeline SSE non-blocking, nama file unik anti-kolisi, dan perlindungan path traversal pada seluruh endpoint." },
 ]
 
@@ -70,10 +87,27 @@ function useReducedMotion() {
   return reduced
 }
 
+function createNewChatSession(): ChatSession {
+  const now = new Date().toISOString()
+  return {
+    id: `chat-${Date.now()}`,
+    title: "Sesi Brainstorm Baru",
+    createdAt: now,
+    updatedAt: now,
+    messages: [
+      {
+        role: "assistant",
+        content: "Tulis topik video yang lagi lu incar — gua bantu racik opsi judul ber-CTR tinggi.",
+      },
+    ],
+    suggestions: [],
+  }
+}
+
 export default function App() {
   const reduced = useReducedMotion()
-  const accent: MosaicAccent = "ice"
-  const tone = ACCENTS[accent]
+  const [settings, setSettings] = React.useState<StudioSettings>(() => loadStudioSettings())
+  const tone = ACCENTS[settings.accent] || ACCENTS.ice
 
   const rootRef = React.useRef<HTMLDivElement | null>(null)
   const headerRef = React.useRef<HTMLElement | null>(null)
@@ -82,8 +116,14 @@ export default function App() {
   const voicesRef = React.useRef<HTMLElement | null>(null)
   const cardRef = React.useRef<HTMLFormElement | null>(null)
   const inputRef = React.useRef<HTMLTextAreaElement | null>(null)
+
+  const modeBtnRef = React.useRef<HTMLButtonElement | null>(null)
+  const modeMenuRef = React.useRef<HTMLDivElement | null>(null)
   const voiceBtnRef = React.useRef<HTMLButtonElement | null>(null)
   const voiceMenuRef = React.useRef<HTMLDivElement | null>(null)
+  const wavBtnRef = React.useRef<HTMLButtonElement | null>(null)
+  const wavMenuRef = React.useRef<HTMLDivElement | null>(null)
+
   const linksRef = React.useRef<HTMLDivElement | null>(null)
   const pillRef = React.useRef<HTMLSpanElement | null>(null)
   const prevHeight = React.useRef(0)
@@ -109,17 +149,32 @@ export default function App() {
 
   const [prompt, setPrompt] = React.useState("")
   const [intent, setIntent] = React.useState<IntentType>("auto")
-  const [voice, setVoice] = React.useState(DEFAULT_VOICE)
-  const [autoTag, setAutoTag] = React.useState(true)
-  const [menuOpen, setMenuOpen] = React.useState(false)
+  const [voice, setVoice] = React.useState(settings.defaultVoice)
+  const [autoTag, setAutoTag] = React.useState(settings.defaultAutoTag)
+  const [modeMenuOpen, setModeMenuOpen] = React.useState(false)
+  const [voiceMenuOpen, setVoiceMenuOpen] = React.useState(false)
+  const [wavMenuOpen, setWavMenuOpen] = React.useState(false)
   const [typed, setTyped] = React.useState("")
   const [focused, setFocused] = React.useState(false)
   const [nudge, setNudge] = React.useState(false)
   const [activeNav, setActiveNav] = React.useState<"home" | "features" | "voices">("home")
   const [voiceTab, setVoiceTab] = React.useState<0 | 1 | 2>(0)
   const [sheet, setSheet] = React.useState(false)
-  const [historyOpen, setHistoryOpen] = React.useState(false)
-  const [chatOpen, setChatOpen] = React.useState(false)
+
+  const [hubOpen, setHubOpen] = React.useState(false)
+  const [hubTab, setHubTab] = React.useState<"assets" | "chats" | "settings">("assets")
+  const [chatSessions, setChatSessions] = React.useState<ChatSession[]>(() => loadChatSessions())
+  const [activeChat, setActiveChat] = React.useState<ChatSession>(() => createNewChatSession())
+  const [localAssets, setLocalAssets] = React.useState<HistoryItem[] | null>(null)
+  const [localHealth, setLocalHealth] = React.useState(health)
+  const [previewDoc, setPreviewDoc] = React.useState<{ title: string; content: string } | null>(null)
+
+  const assets = localAssets ?? history
+  const activeHealth = localHealth ?? health
+  const activeMode = MODE_OPTIONS.find((m) => m.id === intent) ?? MODE_OPTIONS[0]
+  const showAutoTag = intent === "script"
+  const showVoice = intent === "auto" || intent === "voice_only"
+  const wavHistory = React.useMemo(() => assets.filter((h) => h.type === "audio" && h.name.endsWith(".wav")), [assets])
 
   const headWidth = React.useMemo(
     () => Math.max(...HEADLINE.map((l) => layoutPixels(l).width + 1)),
@@ -147,8 +202,52 @@ export default function App() {
     [reduced],
   )
 
+  const refreshAssets = React.useCallback(async () => {
+    try {
+      const next = await fetchHistory()
+      setLocalAssets(next)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const refreshHealth = React.useCallback(async () => {
+    try {
+      const next = await fetchHealth(true)
+      setLocalHealth(next)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const handleUpdateSettings = (next: StudioSettings) => {
+    setSettings(next)
+    saveStudioSettings(next)
+    setVoice(next.defaultVoice)
+    setAutoTag(next.defaultAutoTag)
+  }
+
+  const openBrainstorm = (sessionToOpen?: ChatSession) => {
+    if (cardRef.current) prevHeight.current = cardRef.current.offsetHeight
+    setPreviewDoc(null)
+    if (sessionToOpen) {
+      setActiveChat(sessionToOpen)
+    } else if (activeChat.messages.length <= 1) {
+      setActiveChat(createNewChatSession())
+    }
+    setPhase("brainstorm")
+    go("home")
+  }
+
+  const handleUpdateChatSession = (updated: ChatSession) => {
+    setActiveChat(updated)
+    const nextList = saveChatSession(updated)
+    setChatSessions(nextList)
+  }
+
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault()
+    if (phase === "brainstorm") return
     const clean = prompt.trim()
     if (!clean) {
       setNudge(true)
@@ -156,65 +255,93 @@ export default function App() {
       inputRef.current?.focus()
       return
     }
+    setPreviewDoc(null)
     if (cardRef.current) prevHeight.current = cardRef.current.offsetHeight
     void startPipeline({
       intent,
       prompt: clean,
       voice,
-      auto_tag: autoTag,
-      auto_proceed: intent !== "title" && intent !== "script",
+      auto_tag: intent === "script" ? autoTag : false,
+      auto_proceed: false,
+    }).then(() => {
+      void refreshAssets()
     })
   }
 
   const handleRefine = (keepPrompt: boolean) => {
     if (cardRef.current) prevHeight.current = cardRef.current.offsetHeight
+    setPreviewDoc(null)
     if (!keepPrompt) setPrompt("")
     resetStudio()
     window.setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 40)
   }
 
-  const handleSelectHistory = async (item: HistoryItem) => {
-    if (!item.audio_url) return
-    let words = [] as { text: string; startSec: number; endSec: number }[]
-    if (item.json_url) {
-      try {
-        words = await fetchTranscriptWords(item.json_url)
-      } catch {
-        words = []
+  const handleSelectAsset = async (item: HistoryItem) => {
+    if (item.type === "audio") {
+      if (intent === "transcribe") {
+        setPrompt(item.name)
+        setPhase("idle")
+        return
       }
+      if (!item.audio_url) return
+      let words = [] as { text: string; startSec: number; endSec: number }[]
+      if (item.json_url) {
+        try {
+          words = await fetchTranscriptWords(item.json_url)
+        } catch {
+          words = []
+        }
+      }
+      if (cardRef.current) prevHeight.current = cardRef.current.offsetHeight
+      setPreviewDoc(null)
+      setResult({
+        intent: "history",
+        execution_time_sec: 0,
+        tts_data: {
+          filename: item.name,
+          audio_url: item.audio_url,
+          voice: item.voice || settings.defaultVoice,
+          duration_sec: item.duration_sec || 0,
+          duration_frames: Math.round((item.duration_sec || 0) * 30),
+          file_size_bytes: item.file_size_bytes,
+          sample_rate: 24000,
+          primary_path: `output/audio/${item.name}`,
+        },
+        transcribe_data:
+          words.length > 0 && item.vtt_url && item.json_url
+            ? {
+                filename: item.name,
+                words,
+                vtt_content: "",
+                vtt_url: item.vtt_url,
+                json_url: item.json_url,
+                word_count: words.length,
+                duration_sec: item.duration_sec || 0,
+              }
+            : null,
+      })
+      setPhase("done")
+      go("home")
+      return
     }
-    if (cardRef.current) prevHeight.current = cardRef.current.offsetHeight
-    setResult({
-      intent: "history",
-      execution_time_sec: 0,
-      tts_data: {
-        filename: item.name,
-        audio_url: item.audio_url,
-        voice: item.voice || DEFAULT_VOICE,
-        duration_sec: item.duration_sec || 0,
-        duration_frames: Math.round((item.duration_sec || 0) * 30),
-        file_size_bytes: item.file_size_bytes,
-        sample_rate: 24000,
-        primary_path: `output/audio/${item.name}`,
-      },
-      transcribe_data:
-        words.length > 0 && item.vtt_url && item.json_url
-          ? {
-              filename: item.name,
-              words,
-              vtt_content: "",
-              vtt_url: item.vtt_url,
-              json_url: item.json_url,
-              word_count: words.length,
-              duration_sec: item.duration_sec || 0,
-            }
-          : null,
-    })
-    setPhase("done")
-    go("home")
+
+    try {
+      const doc = await fetchHistoryAssetContent(item.type, item.name)
+      if (cardRef.current) prevHeight.current = cardRef.current.offsetHeight
+      setPreviewDoc({ title: item.title, content: doc.content })
+      setResult({ intent: item.type, execution_time_sec: 0 })
+      setPhase("done")
+      go("home")
+    } catch {
+      // ignore
+    }
   }
 
-  // Smooth card morphing between idle / building / done
+  const handleDeleteAsset = async (item: HistoryItem) => {
+    await deleteHistoryAsset(item.type, item.name)
+    await refreshAssets()
+  }
+
   useIsoLayoutEffect(() => {
     const card = cardRef.current
     if (!card || !prevHeight.current) return
@@ -238,7 +365,6 @@ export default function App() {
     }
   }, [phase, reduced])
 
-  // Typing placeholder loop
   React.useEffect(() => {
     if (reduced) {
       setTyped(STUDIO_PROMPTS[0])
@@ -275,17 +401,25 @@ export default function App() {
     return () => window.clearTimeout(id)
   }, [reduced])
 
-  // Close voice dropdown on outside click / Escape
   React.useEffect(() => {
-    if (!menuOpen) return
+    if (!modeMenuOpen && !voiceMenuOpen && !wavMenuOpen) return
     const down = (e: PointerEvent) => {
-      if (voiceMenuRef.current?.contains(e.target as Node) || voiceBtnRef.current?.contains(e.target as Node)) return
-      setMenuOpen(false)
+      const target = e.target as Node
+      if (modeMenuOpen && !modeMenuRef.current?.contains(target) && !modeBtnRef.current?.contains(target)) {
+        setModeMenuOpen(false)
+      }
+      if (voiceMenuOpen && !voiceMenuRef.current?.contains(target) && !voiceBtnRef.current?.contains(target)) {
+        setVoiceMenuOpen(false)
+      }
+      if (wavMenuOpen && !wavMenuRef.current?.contains(target) && !wavBtnRef.current?.contains(target)) {
+        setWavMenuOpen(false)
+      }
     }
     const key = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setMenuOpen(false)
-        voiceBtnRef.current?.focus()
+        setModeMenuOpen(false)
+        setVoiceMenuOpen(false)
+        setWavMenuOpen(false)
       }
     }
     document.addEventListener("pointerdown", down)
@@ -294,9 +428,8 @@ export default function App() {
       document.removeEventListener("pointerdown", down)
       document.removeEventListener("keydown", key)
     }
-  }, [menuOpen])
+  }, [modeMenuOpen, voiceMenuOpen, wavMenuOpen])
 
-  // GSAP ScrollTrigger choreography + pixel headline repel
   useIsoLayoutEffect(() => {
     const root = rootRef.current
     const hero = heroRef.current
@@ -449,7 +582,6 @@ export default function App() {
     return () => ctx.revert()
   }, [reduced])
 
-  // Sliding glass pill in header nav
   useIsoLayoutEffect(() => {
     const links = linksRef.current
     const pill = pillRef.current
@@ -497,7 +629,21 @@ export default function App() {
     return AVAILABLE_VOICES.filter((v) => v.gender === "Wanita").slice(0, 6)
   }, [voiceTab])
 
-  const latestLog = logs[logs.length - 1]?.message || "Menyiapkan pipeline..."
+  const placeholderText =
+    intent === "transcribe"
+      ? "Masukkan nama file .wav atau pilih dari dropdown WAV di bawah..."
+      : intent === "title"
+        ? "Tulis topik video untuk dirisetkan 3 judul ber-CTR tinggi..."
+        : intent === "script"
+          ? "Tulis judul atau topik video untuk disusun jadi naskah H-A-M-P..."
+          : intent === "voice_only"
+            ? "Tempel naskah final yang siap disuarakan..."
+            : typed
+
+  const selectedWavLabel =
+    wavHistory.find((w) => w.name === prompt.trim())?.name || "Pilih WAV"
+
+  const latestLog = logs[logs.length - 1]?.message || "Menyiapkan proses..."
   const empty = !prompt.trim()
 
   const rootStyle = {
@@ -530,11 +676,16 @@ export default function App() {
           </nav>
 
           <div className="mpt-nav-actions">
-            <button type="button" className="mpt-ghost" onClick={() => setChatOpen(true)}>
-              <MessageSquare size={14} /> Brainstorm
-            </button>
-            <button type="button" className="mpt-cta" onClick={() => setHistoryOpen(true)}>
-              <History size={14} /> History ({history.length})
+            <button
+              type="button"
+              className="mpt-cta"
+              onClick={() => {
+                setHubTab("assets")
+                setHubOpen(true)
+                void refreshAssets()
+              }}
+            >
+              <Layers size={14} /> Studio Hub ({assets.length})
             </button>
           </div>
 
@@ -555,8 +706,17 @@ export default function App() {
             <div className="mpt-sheet-panel">
               <button type="button" className="mpt-link" onClick={() => go("features")}>Features</button>
               <button type="button" className="mpt-link" onClick={() => go("voices")}>Voices</button>
-              <button type="button" className="mpt-ghost" onClick={() => { setSheet(false); setChatOpen(true) }}>Title Brainstorm</button>
-              <button type="button" className="mpt-cta" onClick={() => { setSheet(false); setHistoryOpen(true) }}>History ({history.length})</button>
+              <button
+                type="button"
+                className="mpt-cta"
+                onClick={() => {
+                  setSheet(false)
+                  setHubTab("assets")
+                  setHubOpen(true)
+                }}
+              >
+                Studio Hub ({assets.length})
+              </button>
             </div>
           </div>
         </div>
@@ -587,7 +747,7 @@ export default function App() {
                 <>
                   <div className="mpt-field mpt-enter">
                     <label htmlFor="mvs-prompt" className="mpt-sr">
-                      Tulis topik video atau tempel naskah voice-over
+                      Tulis topik video, naskah, atau nama file audio
                     </label>
                     <textarea
                       ref={inputRef}
@@ -606,8 +766,10 @@ export default function App() {
                     />
                     {!prompt && (
                       <span className="mpt-ph" aria-hidden="true">
-                        {focused ? "Tulis ide topik video pendek atau tempel naskah jadi..." : typed}
-                        {!focused && <i className="mpt-caret" />}
+                        {focused && intent === "auto"
+                          ? "Tulis ide topik video pendek atau tempel naskah jadi..."
+                          : placeholderText}
+                        {!focused && intent === "auto" && <i className="mpt-caret" />}
                       </span>
                     )}
                   </div>
@@ -615,72 +777,168 @@ export default function App() {
                   {error && <div className="mvs-error-banner mpt-enter" role="alert">{error}</div>}
 
                   <div className="mpt-tools mpt-enter">
-                    <div className="mpt-chips" role="radiogroup" aria-label="Mode produksi">
-                      {MODE_CHIPS.map((chip) => (
-                        <button
-                          key={chip.id}
-                          type="button"
-                          role="radio"
-                          aria-checked={intent === chip.id}
-                          className="mpt-chip"
-                          onClick={() => setIntent(chip.id)}
-                        >
-                          <PixelIcon name={chip.icon} />
-                          <span>{chip.label}</span>
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="mpt-right">
-                      <button
-                        type="button"
-                        className="mpt-chip"
-                        aria-checked={autoTag}
-                        role="switch"
-                        onClick={() => setAutoTag((v) => !v)}
-                        title="Sisipkan 16 inline vocal tags Gemini secara otomatis"
-                      >
-                        <span>Auto-Tag</span>
-                      </button>
-
+                    <div className="mvs-tools-left">
                       <div className="mpt-model-wrap">
                         <button
-                          ref={voiceBtnRef}
+                          ref={modeBtnRef}
                           type="button"
-                          className="mpt-model"
+                          className="mpt-chip mvs-mode-trigger"
+                          aria-checked="true"
                           aria-haspopup="menu"
-                          aria-expanded={menuOpen}
-                          onClick={() => setMenuOpen((o) => !o)}
+                          aria-expanded={modeMenuOpen}
+                          onClick={() => {
+                            setVoiceMenuOpen(false)
+                            setWavMenuOpen(false)
+                            setModeMenuOpen((o) => !o)
+                          }}
                         >
-                          <PixelIcon name="bolt" />
-                          <span>{voice}</span>
+                          <PixelIcon name={activeMode.icon} />
+                          <span>{activeMode.label}</span>
                           <svg className="mpt-chev" viewBox="0 0 10 6" aria-hidden="true">
                             <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </button>
 
-                        {menuOpen && (
-                          <div ref={voiceMenuRef} className="mpt-menu" role="menu" aria-label="Pilih Suara Studio">
-                            {AVAILABLE_VOICES.map((v) => (
+                        {modeMenuOpen && (
+                          <div ref={modeMenuRef} className="mpt-menu mvs-mode-menu" role="menu" aria-label="Pilih Mode">
+                            {MODE_OPTIONS.map((opt) => (
                               <button
-                                key={v.id}
+                                key={opt.id}
                                 type="button"
                                 role="menuitemradio"
-                                aria-checked={voice === v.id}
+                                aria-checked={intent === opt.id}
                                 className="mpt-menu-item"
                                 onClick={() => {
-                                  setVoice(v.id)
-                                  setMenuOpen(false)
-                                  voiceBtnRef.current?.focus()
+                                  setIntent(opt.id)
+                                  setModeMenuOpen(false)
+                                  modeBtnRef.current?.focus()
                                 }}
                               >
-                                <span>{v.name}</span>
-                                <small>{v.tone}</small>
+                                <span className="mvs-menu-label">
+                                  <PixelIcon name={opt.icon} />
+                                  {opt.label}
+                                </span>
+                                <small>{opt.desc}</small>
                               </button>
                             ))}
                           </div>
                         )}
                       </div>
+
+                      <button
+                        type="button"
+                        className="mpt-chip mvs-brainstorm-chip"
+                        onClick={() => openBrainstorm()}
+                        title="Diskusi & racik ide judul bersama AI langsung di composer"
+                      >
+                        <Sparkles size={13} />
+                        <span>Brainstorm Ide</span>
+                      </button>
+                    </div>
+
+                    <div className="mpt-right">
+                      {showAutoTag && (
+                        <button
+                          type="button"
+                          className="mpt-chip"
+                          aria-checked={autoTag}
+                          role="switch"
+                          onClick={() => setAutoTag((v) => !v)}
+                          title="Sisipkan 16 inline vocal tags Gemini ke dalam naskah"
+                        >
+                          <span>Auto-Tag</span>
+                        </button>
+                      )}
+
+                      {intent === "transcribe" && wavHistory.length > 0 && (
+                        <div className="mpt-model-wrap">
+                          <button
+                            ref={wavBtnRef}
+                            type="button"
+                            className="mpt-model"
+                            aria-haspopup="menu"
+                            aria-expanded={wavMenuOpen}
+                            onClick={() => {
+                              setModeMenuOpen(false)
+                              setVoiceMenuOpen(false)
+                              setWavMenuOpen((o) => !o)
+                            }}
+                          >
+                            <PixelIcon name="wave" />
+                            <span className="mvs-wav-label">{selectedWavLabel}</span>
+                            <svg className="mpt-chev" viewBox="0 0 10 6" aria-hidden="true">
+                              <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </button>
+
+                          {wavMenuOpen && (
+                            <div ref={wavMenuRef} className="mpt-menu mvs-wav-menu" role="menu" aria-label="Pilih File WAV">
+                              {wavHistory.map((item) => (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  role="menuitemradio"
+                                  aria-checked={prompt.trim() === item.name}
+                                  className="mpt-menu-item"
+                                  onClick={() => {
+                                    setPrompt(item.name)
+                                    setWavMenuOpen(false)
+                                    wavBtnRef.current?.focus()
+                                  }}
+                                >
+                                  <span className="mvs-wav-item-name">{item.name}</span>
+                                  <small>{item.duration_sec ? `${item.duration_sec}s` : "WAV"}</small>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {showVoice && (
+                        <div className="mpt-model-wrap">
+                          <button
+                            ref={voiceBtnRef}
+                            type="button"
+                            className="mpt-model"
+                            aria-haspopup="menu"
+                            aria-expanded={voiceMenuOpen}
+                            onClick={() => {
+                              setModeMenuOpen(false)
+                              setWavMenuOpen(false)
+                              setVoiceMenuOpen((o) => !o)
+                            }}
+                          >
+                            <PixelIcon name="bolt" />
+                            <span>{voice}</span>
+                            <svg className="mpt-chev" viewBox="0 0 10 6" aria-hidden="true">
+                              <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </button>
+
+                          {voiceMenuOpen && (
+                            <div ref={voiceMenuRef} className="mpt-menu" role="menu" aria-label="Pilih Suara Studio">
+                              {AVAILABLE_VOICES.map((v) => (
+                                <button
+                                  key={v.id}
+                                  type="button"
+                                  role="menuitemradio"
+                                  aria-checked={voice === v.id}
+                                  className="mpt-menu-item"
+                                  onClick={() => {
+                                    setVoice(v.id)
+                                    setVoiceMenuOpen(false)
+                                    voiceBtnRef.current?.focus()
+                                  }}
+                                >
+                                  <span>{v.name}</span>
+                                  <small>{v.tone}</small>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       <button type="submit" className="mpt-send" aria-label="Generate" data-ready={empty ? "false" : "true"}>
                         <PixelIcon name="arrow" />
@@ -690,10 +948,27 @@ export default function App() {
                 </>
               )}
 
+              {phase === "brainstorm" && (
+                <BrainstormPanel
+                  session={activeChat}
+                  onUpdateSession={handleUpdateChatSession}
+                  onNewSession={() => setActiveChat(createNewChatSession())}
+                  onBack={() => handleRefine(true)}
+                  onUseTitle={(selected) => {
+                    setPrompt(selected)
+                    setIntent("script")
+                    handleRefine(true)
+                  }}
+                />
+              )}
+
               {phase === "building" && (
                 <div className="mpt-build" role="status" aria-live="polite">
                   <div className="mpt-build-head mpt-enter">
-                    <span className="mpt-build-title">Memproduksi aset studio ({voice})</span>
+                    <span className="mpt-build-title">
+                      Memproses mode {activeMode.label}
+                      {showVoice ? ` (${voice})` : ""}
+                    </span>
                     <span className="mpt-build-pct">{progress}%</span>
                   </div>
                   <div className="mpt-progress mpt-enter" aria-hidden="true">
@@ -731,9 +1006,11 @@ export default function App() {
                         {result.execution_time_sec > 0 ? ` · ${result.execution_time_sec}s` : ""}
                       </span>
                       <p className="mpt-done-title">
-                        {result.script_data?.title ||
+                        {previewDoc?.title ||
+                          result.script_data?.title ||
                           result.title_data?.recommendations?.[0]?.title ||
                           result.tts_data?.filename ||
+                          result.transcribe_data?.filename ||
                           "Hasil Produksi"}
                       </p>
                     </div>
@@ -747,9 +1024,27 @@ export default function App() {
                     </div>
                   </div>
 
-                  {result.tts_data && (
-                    <KaraokePlayer tts={result.tts_data} transcribe={result.transcribe_data} />
+                  {previewDoc && (
+                    <pre className="mvs-pre mpt-enter">{previewDoc.content}</pre>
                   )}
+
+                  {result.tts_data ? (
+                    <KaraokePlayer tts={result.tts_data} transcribe={result.transcribe_data} />
+                  ) : result.transcribe_data ? (
+                    <KaraokePlayer
+                      tts={{
+                        filename: result.transcribe_data.filename,
+                        audio_url: `/api/audio/${result.transcribe_data.filename}`,
+                        voice: "WAV Audio",
+                        duration_sec: result.transcribe_data.duration_sec,
+                        duration_frames: Math.round(result.transcribe_data.duration_sec * 30),
+                        file_size_bytes: 0,
+                        sample_rate: 24000,
+                        primary_path: `output/audio/${result.transcribe_data.filename}`,
+                      }}
+                      transcribe={result.transcribe_data}
+                    />
+                  ) : null}
 
                   {result.script_data && <ScriptViewer script={result.script_data} />}
 
@@ -762,7 +1057,7 @@ export default function App() {
                           className="mvs-sugg-card"
                           onClick={() => {
                             setPrompt(rec.title)
-                            setIntent("full")
+                            setIntent("script")
                             handleRefine(true)
                           }}
                         >
@@ -781,10 +1076,10 @@ export default function App() {
             </form>
 
             <p className="mpt-hint">
-              <span className="mvs-status-dot" data-ok={health?.gemini_api_configured ? "true" : "false"} />
+              <span className="mvs-status-dot" data-ok={activeHealth?.gemini_api_configured ? "true" : "false"} />
               <span>
-                {health
-                  ? `${health.detected_model.display_name} · ${health.voices_count} voices`
+                {activeHealth
+                  ? `${activeHealth.detected_model.display_name} · ${activeHealth.voices_count} voices`
                   : "Menunggu backend FastAPI..."}
               </span>
               <span aria-hidden="true">·</span>
@@ -863,6 +1158,7 @@ export default function App() {
                       className={isSelected ? "mpt-solid mpt-plan-cta" : "mpt-ghost mpt-plan-cta"}
                       onClick={() => {
                         setVoice(v.id)
+                        setIntent("voice_only")
                         go("home", true)
                       }}
                     >
@@ -895,21 +1191,21 @@ export default function App() {
         </div>
       </footer>
 
-      <HistoryDrawer
-        open={historyOpen}
-        items={history}
-        onClose={() => setHistoryOpen(false)}
-        onSelect={(item) => void handleSelectHistory(item)}
-      />
-
-      <TitleChatDrawer
-        open={chatOpen}
-        onClose={() => setChatOpen(false)}
-        onUseTitle={(selected) => {
-          setPrompt(selected)
-          setChatOpen(false)
-          go("home", true)
-        }}
+      <StudioHubModal
+        open={hubOpen}
+        initialTab={hubTab}
+        assets={assets}
+        chats={chatSessions}
+        settings={settings}
+        health={activeHealth}
+        onClose={() => setHubOpen(false)}
+        onSelectAsset={(item) => void handleSelectAsset(item)}
+        onDeleteAsset={handleDeleteAsset}
+        onRefreshAssets={() => void refreshAssets()}
+        onResumeChat={(sess) => openBrainstorm(sess)}
+        onDeleteChat={(id) => setChatSessions(deleteChatSession(id))}
+        onUpdateSettings={handleUpdateSettings}
+        onRefreshHealth={() => void refreshHealth()}
       />
     </div>
   )

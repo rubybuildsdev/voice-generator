@@ -1,4 +1,4 @@
-﻿"""Layanan transkripsi audio word-level aman (anti path traversal, fallback model, cleanup Gemini Files, & kalibrasi durasi)."""
+"""Layanan transkripsi audio word-level aman (anti path traversal, cleanup Gemini Files, & kalibrasi durasi)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ from server.config import (
     ALLOWED_AUDIO_EXTENSIONS,
     OUTPUT_AUDIO_DIR,
     OUTPUT_TRANSCRIPTS_DIR,
-    TEXT_MODEL_FALLBACK,
     TRANSCRIBE_MODEL,
     safe_resolve_under,
 )
@@ -45,18 +44,32 @@ def _parse_words_payload(raw_text: str) -> list[WordTimestamp]:
             end_sec = max(start_sec, float(item.get("endSec", item.get("end", start_sec + 0.1))))
         except (TypeError, ValueError):
             continue
-        words.append(WordTimestamp(text=word_text, startSec=round(start_sec, 3), endSec=round(end_sec, 3)))
+        words.append(
+            WordTimestamp(
+                text=word_text,
+                startSec=round(start_sec, 3),
+                endSec=round(end_sec, 3),
+            )
+        )
     return words
 
 
-def calibrate_word_timestamps(words: list[WordTimestamp], actual_duration_sec: float) -> list[WordTimestamp]:
+def calibrate_word_timestamps(
+    words: list[WordTimestamp],
+    actual_duration_sec: float,
+) -> list[WordTimestamp]:
+    """Menyelaraskan timestamp kata jika model LLM mengalami drift melebihi durasi WAV asli."""
     if not words or actual_duration_sec <= 0:
         return words
+
     max_end = max(w.endSec for w in words)
     if max_end <= 0:
         return words
+
+    # Jika timestamp melenceng melewati durasi WAV asli (atau jauh lebih pendek), skalakan proporsional
     needs_scale = max_end > actual_duration_sec or max_end < actual_duration_sec * 0.70
     scale = (actual_duration_sec / max_end) if needs_scale else 1.0
+
     calibrated: list[WordTimestamp] = []
     prev_end = 0.0
     for w in words:
@@ -67,10 +80,12 @@ def calibrate_word_timestamps(words: list[WordTimestamp], actual_duration_sec: f
             e = round(actual_duration_sec, 3)
         prev_end = e
         calibrated.append(WordTimestamp(text=w.text, startSec=s, endSec=e))
+
     return calibrated
 
 
 def transcribe_audio(audio_file: str) -> TranscribeResponse:
+    """Mentranskripsi file WAV di OUTPUT_AUDIO_DIR menjadi JSON word-level dan WebVTT."""
     target_path = safe_resolve_under(OUTPUT_AUDIO_DIR, audio_file, ALLOWED_AUDIO_EXTENSIONS)
     if not target_path.exists() or not target_path.is_file():
         raise FileNotFoundError(f"File audio '{target_path.name}' tidak ditemukan.")
@@ -78,13 +93,8 @@ def transcribe_audio(audio_file: str) -> TranscribeResponse:
     wav_info = get_wav_info(target_path)
     actual_duration_sec = float(wav_info["duration_sec"])
 
-    models_to_try = [TRANSCRIBE_MODEL]
-    if TEXT_MODEL_FALLBACK and TEXT_MODEL_FALLBACK not in models_to_try:
-        models_to_try.append(TEXT_MODEL_FALLBACK)
-
     client = get_client()
     uploaded_file = None
-    words: list[WordTimestamp] = []
     try:
         uploaded_file = client.files.upload(file=str(target_path))
         duration_hint = (
@@ -99,26 +109,15 @@ def transcribe_audio(audio_file: str) -> TranscribeResponse:
             "Kembalikan HANYA JSON valid dengan format:\n"
             '{"words": [{"text": "kata", "startSec": 0.0, "endSec": 0.35}]}'
         )
-        last_err: Exception | None = None
-        for model_name in models_to_try:
-            try:
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=[uploaded_file, prompt],
-                    config={"response_mime_type": "application/json", "temperature": 0.0},
-                )
-                raw_text = extract_response_text(response)
-                if not raw_text:
-                    raise RuntimeError(f"Model {model_name} mengembalikan respons kosong.")
-                words = _parse_words_payload(raw_text)
-                if words:
-                    break
-            except Exception as exc:
-                logger.warning("Transkripsi dengan model %s gagal: %s", model_name, exc)
-                last_err = exc
-        else:
-            if last_err is not None:
-                raise last_err
+        response = client.models.generate_content(
+            model=TRANSCRIBE_MODEL,
+            contents=[uploaded_file, prompt],
+            config={"response_mime_type": "application/json", "temperature": 0.0},
+        )
+        raw_text = extract_response_text(response)
+        if not raw_text:
+            raise RuntimeError("Model transkripsi mengembalikan respons kosong.")
+        words = _parse_words_payload(raw_text)
     finally:
         if uploaded_file is not None and getattr(uploaded_file, "name", None):
             try:
@@ -138,13 +137,17 @@ def transcribe_audio(audio_file: str) -> TranscribeResponse:
     vtt_name = f"{stem}.vtt"
     json_name = f"{stem}.json"
 
-    atomic_write_text(OUTPUT_TRANSCRIPTS_DIR / vtt_name, vtt_content)
+    vtt_path = OUTPUT_TRANSCRIPTS_DIR / vtt_name
+    json_path = OUTPUT_TRANSCRIPTS_DIR / json_name
+
+    atomic_write_text(vtt_path, vtt_content)
     atomic_write_text(
-        OUTPUT_TRANSCRIPTS_DIR / json_name,
+        json_path,
         json.dumps([w.model_dump() for w in words], ensure_ascii=False, indent=2),
     )
 
     duration_sec = actual_duration_sec or words[-1].endSec
+
     return TranscribeResponse(
         filename=target_path.name,
         words=words,

@@ -20,8 +20,9 @@ from server.services.audio_utils import (
     pcm_to_wav_bytes,
     unique_slug_filename,
 )
+from server.services.history_service import delete_history_asset, get_asset_content
 from server.services.pipeline_service import compute_steps, resolve_intent
-from server.services.transcribe_service import transcribe_audio
+from server.services.transcribe_service import calibrate_word_timestamps, transcribe_audio
 
 
 class TestSecurityAndPathValidation(unittest.TestCase):
@@ -40,6 +41,14 @@ class TestSecurityAndPathValidation(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             transcribe_audio("non-existent-audio-file-xyz.wav")
 
+    def test_history_delete_and_read_block_traversal(self) -> None:
+        with self.assertRaises(UnsafePathError):
+            delete_history_asset("audio", "../secret.wav")
+        with self.assertRaises(UnsafePathError):
+            get_asset_content("audio", "demo.wav")
+        with self.assertRaises(FileNotFoundError):
+            delete_history_asset("script", "tidak-ada-xyz.md")
+
     def test_cors_no_wildcard(self) -> None:
         self.assertNotIn("*", CORS_ORIGINS)
 
@@ -51,6 +60,14 @@ class TestAudioAndVttFormatting(unittest.TestCase):
         self.assertEqual(format_vtt_time(59.9996), "00:01:00.000")
         self.assertEqual(format_vtt_time(3599.9999), "01:00:00.000")
         self.assertEqual(format_vtt_time(61.2345), "00:01:01.235")
+
+    def test_calibrate_word_timestamps_prevents_overflow(self) -> None:
+        drifted = [
+            WordTimestamp(text="satu", startSec=0.0, endSec=20.0),
+            WordTimestamp(text="dua", startSec=20.0, endSec=52.479),
+        ]
+        calibrated = calibrate_word_timestamps(drifted, 33.63)
+        self.assertLessEqual(calibrated[-1].endSec, 33.63)
 
     def test_generate_vtt_produces_valid_cues(self) -> None:
         words = [
@@ -74,7 +91,6 @@ class TestAudioAndVttFormatting(unittest.TestCase):
             self.assertEqual(info["file_size_bytes"], 0)
 
             valid = Path(tmp) / "tone.wav"
-            # 1 detik silence @ 24kHz mono 16-bit = 48000 bytes PCM
             wav_bytes = pcm_to_wav_bytes(b"\x00\x00" * 24000)
             valid.write_bytes(wav_bytes)
             valid_info = get_wav_info(valid)
@@ -85,7 +101,10 @@ class TestAudioAndVttFormatting(unittest.TestCase):
 class TestPipelineLogic(unittest.TestCase):
     def test_resolve_intent_auto_vs_explicit(self) -> None:
         short_req = PipelineRequest(intent="auto", prompt="Kenapa GPU lebih cepat dari CPU")
-        self.assertEqual(resolve_intent(short_req), "full")
+        self.assertEqual(resolve_intent(short_req), "title")
+
+        wav_req = PipelineRequest(intent="auto", prompt="demo-audio.wav")
+        self.assertEqual(resolve_intent(wav_req), "transcribe")
 
         tagged_req = PipelineRequest(intent="auto", prompt="Halo semua <short pause> ini demo")
         self.assertEqual(resolve_intent(tagged_req), "voice_only")
@@ -96,12 +115,11 @@ class TestPipelineLogic(unittest.TestCase):
         explicit_script = PipelineRequest(intent="script", prompt="Topik AI", script_text="Draft awal")
         self.assertEqual(resolve_intent(explicit_script), "script")
 
-    def test_compute_steps_respects_auto_proceed(self) -> None:
+    def test_compute_steps_respects_modes(self) -> None:
         self.assertEqual(compute_steps("title", auto_proceed=False), ["title"])
         self.assertEqual(compute_steps("script", auto_proceed=False), ["script"])
-        self.assertEqual(compute_steps("script", auto_proceed=True), ["script", "tts", "transcribe"])
         self.assertEqual(compute_steps("voice_only", auto_proceed=False), ["tts", "transcribe"])
-        self.assertEqual(compute_steps("full", auto_proceed=True), ["title", "script", "tts", "transcribe"])
+        self.assertEqual(compute_steps("transcribe", auto_proceed=False), ["transcribe"])
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ import time
 from typing import Any
 
 from google import genai
+from google.genai import types
 
 from server.config import (
     GEMINI_API_KEY,
@@ -88,17 +89,23 @@ def generate_text_with_fallback(
     response_mime_type: str | None = None,
     temperature: float = 0.7,
 ) -> tuple[str, str]:
-    """Memanggil TEXT_MODEL dengan fallback otomatis ke TEXT_MODEL_FALLBACK."""
+    """Memanggil TEXT_MODEL dengan fallback otomatis, timeout 20s, dan AFC dimatikan."""
     client = get_client()
     models_to_try = [TEXT_MODEL]
     if TEXT_MODEL_FALLBACK and TEXT_MODEL_FALLBACK != TEXT_MODEL:
         models_to_try.append(TEXT_MODEL_FALLBACK)
 
-    config: dict[str, Any] = {"temperature": temperature}
+    config_kwargs: dict[str, Any] = {
+        "temperature": temperature,
+        "http_options": types.HttpOptions(timeout=20000),
+        "automatic_function_calling": types.AutomaticFunctionCallingConfig(disable=True),
+    }
     if system_instruction:
-        config["system_instruction"] = system_instruction
+        config_kwargs["system_instruction"] = system_instruction
     if response_mime_type:
-        config["response_mime_type"] = response_mime_type
+        config_kwargs["response_mime_type"] = response_mime_type
+
+    config = types.GenerateContentConfig(**config_kwargs)
 
     last_error: Exception | None = None
     for model_name in models_to_try:

@@ -119,27 +119,39 @@ def generate_titles(topic: str, count: int = 3, save_to_disk: bool = True) -> Ti
 
 
 def chat_title_discussion(messages: list[ChatMessage]) -> TitleChatResponse:
-    """Diskusi interaktif brainstorming judul tanpa menulis file ke disk."""
+    """Diskusi interaktif brainstorming judul dengan fallback aman jika output non-JSON."""
     transcript = "\n".join(
         f"{'User' if m.role == 'user' else 'Assistant'}: {m.content}" for m in messages
     )
     prompt = (
         "Berikut percakapan brainstorming judul video pendek:\n"
         f"{transcript}\n\n"
-        "Berikan balasan singkat, tajam, dan maksimal 3 opsi judul baru.\n"
+        "Jawab santai dalam Bahasa Indonesia. Kalau user baru menyapa atau topik belum spesifik, "
+        "tanyakan topik atau niche videonya. Kalau topik sudah jelas, berikan balasan singkat plus maksimal 3 opsi judul.\n"
         "Kembalikan HANYA JSON valid:\n"
         '{"reply": "...", "suggested_titles": [{"title": "...", "formula": "...", "why_it_works": "..."}]}'
     )
 
     raw_text, _ = generate_text_with_fallback(
         prompt,
-        system_instruction="Kamu adalah partner brainstorming judul video edukasi teknologi berbahasa Indonesia.",
+        system_instruction=(
+            "Kamu adalah partner brainstorming judul video edukasi teknologi berbahasa Indonesia. "
+            "Kembalikan HANYA JSON valid dengan kunci 'reply' dan 'suggested_titles'."
+        ),
         response_mime_type="application/json",
         temperature=0.8,
     )
-    data = _parse_json_object(raw_text)
+
+    try:
+        data = _parse_json_object(raw_text)
+    except Exception:
+        logger.warning("Response chat judul bukan JSON valid, memakai fallback teks langsung.")
+        return TitleChatResponse(reply=raw_text.strip(), suggested_titles=[])
+
     suggested: list[TitleRecommendation] = []
     for item in (data.get("suggested_titles") or [])[:5]:
+        if not isinstance(item, dict):
+            continue
         t = str(item.get("title", "")).strip()
         if t:
             suggested.append(
@@ -150,7 +162,7 @@ def chat_title_discussion(messages: list[ChatMessage]) -> TitleChatResponse:
                     why_it_works=str(item.get("why_it_works", "")).strip(),
                 )
             )
-    reply = str(data.get("reply", "")).strip() or "Berikut beberapa opsi judul yang bisa dicoba."
+    reply = str(data.get("reply", "")).strip() or "Topik apa yang lagi mau lu garap hari ini?"
     return TitleChatResponse(reply=reply, suggested_titles=suggested)
 
 

@@ -33,12 +33,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Keamanan CORS: tidak pernah mengizinkan wildcard origin dengan allow_credentials=True
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Accept"],
 )
 

@@ -1,0 +1,60 @@
+/* Append mode dropdown, custom glass WAV dropdown, inline Brainstorm morphing, Studio Hub modal, and dark slim scrollbars */
+.mvs-tools-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mvs-mode-trigger{gap:8px;padding:0 12px}
+.mvs-mode-menu{left:0;right:auto;min-width:260px;transform-origin:10% 100%}
+.mvs-menu-label{display:inline-flex;align-items:center;gap:8px}
+.mvs-menu-label .mpt-picon{width:12px;height:12px;fill:var(--mpt-a2)}
+
+.mvs-brainstorm-chip{color:#dff2ff;background:linear-gradient(180deg,rgba(169,220,255,.18),rgba(95,178,242,.08));box-shadow:inset 0 0 0 1px rgba(169,220,255,.28)}
+.mvs-brainstorm-chip:hover{color:#fff;background:linear-gradient(180deg,rgba(169,220,255,.28),rgba(95,178,242,.14))}
+.mvs-brainstorm-chip svg{color:var(--mpt-a2)}
+
+.mvs-wav-menu{min-width:280px;max-width:340px}
+.mvs-wav-label{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mvs-wav-item-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:210px}
+
+/* Inline Brainstorm inside morphing composer */
+.mvs-brainstorm-inline{display:flex;flex-direction:column;gap:12px}
+.mvs-bs-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.mvs-bs-title-wrap{display:flex;align-items:center;gap:10px;min-width:0}
+.mvs-bs-title-wrap strong{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.mvs-bs-title-wrap small{display:block;font-size:12px;color:var(--mpt-mute)}
+.mvs-bs-spark{color:var(--mpt-a2);flex:none}
+.mvs-bs-actions{display:flex;gap:6px;flex:none}
+.mvs-sm-btn{height:30px;padding:0 11px;font-size:12px;border-radius:9px}
+.mvs-bs-feed{display:flex;flex-direction:column;gap:10px;max-height:270px;overflow-y:auto;padding-right:4px}
+
+/* Centered Studio Hub Modal (Assets, Chat History, Settings) */
+.mvs-hub-backdrop{position:fixed;inset:0;z-index:70;background:rgba(5,5,8,.68);backdrop-filter:blur(8px);display:grid;place-items:center;padding:18px}
+.mvs-hub-modal{width:min(760px,100%);max-height:min(84svh,680px);padding:20px;display:flex;flex-direction:column;gap:16px;overflow:hidden}
+.mvs-hub-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mvs-hub-head .mvs-tab{display:inline-flex;align-items:center;gap:6px}
+.mvs-hub-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px}
+.mvs-hub-pane{display:flex;flex-direction:column;gap:12px}
+.mvs-pane-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mvs-filter-pills{display:flex;gap:6px;flex-wrap:wrap}
+.mvs-hub-list{display:flex;flex-direction:column;gap:8px}
+.mvs-type-badge{font-size:10px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border-radius:6px;background:rgba(255,255,255,.08);color:var(--mpt-a2);margin-right:4px}
+
+.mvs-confirm-del{display:inline-flex;align-items:center;gap:4px}
+.mvs-del-yes,.mvs-del-no{height:28px;padding:0 9px;border-radius:8px;font-size:11.5px;font-weight:600}
+.mvs-del-yes{background:rgba(239,68,68,.24);color:#fecaca;box-shadow:inset 0 0 0 1px rgba(248,113,113,.35)}
+.mvs-del-no{background:rgba(255,255,255,.08);color:#d4d4d8}
+
+.mvs-settings-grid{display:grid;gap:12px}
+.mvs-setting-card{padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.mvs-setting-card strong{display:block;font-size:14px;font-weight:600}
+.mvs-setting-card p{font-size:12.5px;color:var(--mpt-mute);margin-top:2px}
+.mvs-setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.mvs-accent-swatches{display:flex;gap:6px}
+.mvs-swatch-dot{width:10px;height:10px;border-radius:50%}
+.mvs-settings-voice-menu{bottom:auto;top:calc(100% + 8px);transform-origin:90% 0%}
+
+/* Sleek dark custom scrollbars across all menus, hub, and panels */
+.mpt-menu,.mvs-karaoke-box,.mvs-segments,.mvs-pre,.mvs-hub-body,.mvs-bs-feed{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+.mpt-menu::-webkit-scrollbar,.mvs-karaoke-box::-webkit-scrollbar,.mvs-segments::-webkit-scrollbar,.mvs-pre::-webkit-scrollbar,.mvs-hub-body::-webkit-scrollbar,.mvs-bs-feed::-webkit-scrollbar{width:6px;height:6px}
+.mpt-menu::-webkit-scrollbar-track,.mvs-karaoke-box::-webkit-scrollbar-track,.mvs-segments::-webkit-scrollbar-track,.mvs-pre::-webkit-scrollbar-track,.mvs-hub-body::-webkit-scrollbar-track,.mvs-bs-feed::-webkit-scrollbar-track{background:transparent}
+.mpt-menu::-webkit-scrollbar-thumb,.mvs-karaoke-box::-webkit-scrollbar-thumb,.mvs-segments::-webkit-scrollbar-thumb,.mvs-pre::-webkit-scrollbar-thumb,.mvs-hub-body::-webkit-scrollbar-thumb,.mvs-bs-feed::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:999px}
+.mpt-menu::-webkit-scrollbar-thumb:hover,.mvs-karaoke-box::-webkit-scrollbar-thumb:hover,.mvs-segments::-webkit-scrollbar-thumb:hover,.mvs-pre::-webkit-scrollbar-thumb:hover,.mvs-hub-body::-webkit-scrollbar-thumb:hover,.mvs-bs-feed::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.32)}
+
+.mvs-bubble-loading{color:var(--mpt-a2);font-style:italic}

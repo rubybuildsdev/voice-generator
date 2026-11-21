@@ -1,6 +1,6 @@
-export type IntentType = "auto" | "full" | "title" | "script" | "voice_only"
+export type IntentType = "auto" | "title" | "script" | "voice_only" | "transcribe"
 export type MosaicAccent = "ice" | "ember" | "lime"
-export type ComposerPhase = "idle" | "building" | "done"
+export type ComposerPhase = "idle" | "brainstorm" | "building" | "done"
 
 export interface VoiceProfile {
   id: string
@@ -35,6 +35,22 @@ export interface TitleResponse {
 export interface ChatMessage {
   role: "user" | "assistant"
   content: string
+}
+
+export interface ChatSession {
+  id: string
+  title: string
+  createdAt: string
+  updatedAt: string
+  messages: ChatMessage[]
+  suggestions: TitleRecommendation[]
+}
+
+export interface StudioSettings {
+  accent: MosaicAccent
+  defaultVoice: string
+  defaultAutoTag: boolean
+  karaokeAutoScroll: boolean
 }
 
 export interface TitleChatResponse {

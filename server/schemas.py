@@ -136,7 +136,7 @@ class TranscribeResponse(BaseModel):
 
 
 # --- Pipeline & History ---
-IntentType = Literal["auto", "title", "script", "voice_only", "full"]
+IntentType = Literal["auto", "title", "script", "voice_only", "transcribe"]
 
 
 class PipelineRequest(BaseModel):

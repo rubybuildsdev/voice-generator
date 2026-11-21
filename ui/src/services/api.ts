@@ -1,16 +1,28 @@
+import { DEFAULT_VOICE } from "../constants/voices"
 import type {
   ChatMessage,
+  ChatSession,
   HealthResponse,
   HistoryItem,
   PipelineRequest,
   PipelineResponse,
   SSELogEvent,
+  StudioSettings,
   TitleChatResponse,
   WordTimestamp,
 } from "../types/studio"
 
 const API_BASE = "/api"
 const LOCAL_HISTORY_KEY = "mosaic_voice_studio_history_v3"
+const CHAT_SESSIONS_KEY = "mosaic_voice_studio_chats_v1"
+const SETTINGS_KEY = "mosaic_voice_studio_settings_v1"
+
+export const DEFAULT_SETTINGS: StudioSettings = {
+  accent: "ice",
+  defaultVoice: DEFAULT_VOICE,
+  defaultAutoTag: true,
+  karaokeAutoScroll: true,
+}
 
 async function handleJson<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -26,11 +38,70 @@ async function handleJson<T>(res: Response): Promise<T> {
   return (await res.json()) as T
 }
 
-export async function fetchHealth(signal?: AbortSignal): Promise<HealthResponse> {
-  const res = await fetch(`${API_BASE}/health`, { signal })
+export async function fetchHealth(refresh = false, signal?: AbortSignal): Promise<HealthResponse> {
+  const res = await fetch(`${API_BASE}/health${refresh ? "?refresh=true" : ""}`, { signal })
   return handleJson<HealthResponse>(res)
 }
 
+/* ---------- Settings Persistence ---------- */
+export function loadStudioSettings(): StudioSettings {
+  try {
+    const raw = window.localStorage.getItem(SETTINGS_KEY)
+    if (!raw) return DEFAULT_SETTINGS
+    const parsed = JSON.parse(raw) as Partial<StudioSettings>
+    return {
+      accent: parsed.accent === "ember" || parsed.accent === "lime" ? parsed.accent : "ice",
+      defaultVoice: typeof parsed.defaultVoice === "string" && parsed.defaultVoice ? parsed.defaultVoice : DEFAULT_VOICE,
+      defaultAutoTag: typeof parsed.defaultAutoTag === "boolean" ? parsed.defaultAutoTag : true,
+      karaokeAutoScroll: typeof parsed.karaokeAutoScroll === "boolean" ? parsed.karaokeAutoScroll : true,
+    }
+  } catch {
+    return DEFAULT_SETTINGS
+  }
+}
+
+export function saveStudioSettings(settings: StudioSettings): void {
+  try {
+    window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+  } catch {
+    // ignore quota errors
+  }
+}
+
+/* ---------- Chat Sessions Persistence ---------- */
+export function loadChatSessions(): ChatSession[] {
+  try {
+    const raw = window.localStorage.getItem(CHAT_SESSIONS_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? (parsed as ChatSession[]) : []
+  } catch {
+    return []
+  }
+}
+
+export function saveChatSession(session: ChatSession): ChatSession[] {
+  const existing = loadChatSessions().filter((s) => s.id !== session.id)
+  const next = [session, ...existing].slice(0, 30)
+  try {
+    window.localStorage.setItem(CHAT_SESSIONS_KEY, JSON.stringify(next))
+  } catch {
+    // ignore quota errors
+  }
+  return next
+}
+
+export function deleteChatSession(sessionId: string): ChatSession[] {
+  const next = loadChatSessions().filter((s) => s.id !== sessionId)
+  try {
+    window.localStorage.setItem(CHAT_SESSIONS_KEY, JSON.stringify(next))
+  } catch {
+    // ignore quota errors
+  }
+  return next
+}
+
+/* ---------- Asset History & Disk API ---------- */
 export function loadLocalHistory(): HistoryItem[] {
   try {
     const raw = window.localStorage.getItem(LOCAL_HISTORY_KEY)
@@ -44,7 +115,7 @@ export function loadLocalHistory(): HistoryItem[] {
 
 export function saveLocalHistoryItem(item: HistoryItem): HistoryItem[] {
   const existing = loadLocalHistory().filter((h) => h.id !== item.id)
-  const next = [item, ...existing].slice(0, 30)
+  const next = [item, ...existing].slice(0, 40)
   try {
     window.localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(next))
   } catch {
@@ -59,10 +130,33 @@ export async function fetchHistory(signal?: AbortSignal): Promise<HistoryItem[]>
     const remote = await handleJson<HistoryItem[]>(res)
     const local = loadLocalHistory()
     const seen = new Set(remote.map((r) => r.id))
-    return [...remote, ...local.filter((l) => !seen.has(l.id))].slice(0, 50)
+    return [...remote, ...local.filter((l) => !seen.has(l.id))].slice(0, 60)
   } catch {
     return loadLocalHistory()
   }
+}
+
+export async function fetchHistoryAssetContent(
+  itemType: "script" | "title",
+  filename: string,
+  signal?: AbortSignal,
+): Promise<{ type: string; name: string; content: string }> {
+  const res = await fetch(
+    `${API_BASE}/history/${encodeURIComponent(itemType)}/${encodeURIComponent(filename)}`,
+    { signal },
+  )
+  return handleJson<{ type: string; name: string; content: string }>(res)
+}
+
+export async function deleteHistoryAsset(
+  itemType: "audio" | "script" | "title",
+  filename: string,
+): Promise<{ deleted: boolean; name: string }> {
+  const res = await fetch(
+    `${API_BASE}/history/${encodeURIComponent(itemType)}/${encodeURIComponent(filename)}`,
+    { method: "DELETE" },
+  )
+  return handleJson<{ deleted: boolean; name: string }>(res)
 }
 
 export async function fetchTranscriptWords(
@@ -99,9 +193,6 @@ export async function saveSelectedTitle(
   return handleJson<{ title: string; saved_path: string }>(res)
 }
 
-/**
- * Mengalirkan eksekusi pipeline via POST SSE secara aman (mendukung naskah panjang & AbortSignal).
- */
 export async function executePipelineStream(
   params: PipelineRequest,
   onEvent: (ev: SSELogEvent) => void,
@@ -118,7 +209,7 @@ export async function executePipelineStream(
   })
 
   if (!res.ok) {
-    let detail = `Gagal memulai pipeline (HTTP ${res.status})`
+    let detail = `Gagal memulai proses (HTTP ${res.status})`
     try {
       const data = (await res.json()) as { detail?: string }
       if (data.detail) detail = data.detail
@@ -172,7 +263,7 @@ export async function executePipelineStream(
     onEvent(logEvent)
 
     if (evName === "error") {
-      streamError = logEvent.message || "Terjadi kesalahan saat eksekusi pipeline."
+      streamError = logEvent.message || "Terjadi kesalahan saat eksekusi."
     } else if (evName === "pipeline_complete" && parsed.payload) {
       finalResult = parsed.payload as PipelineResponse
     }
@@ -199,7 +290,7 @@ export async function executePipelineStream(
     throw new Error(streamError)
   }
   if (!finalResult) {
-    throw new Error("Stream pipeline berhenti sebelum selesai.")
+    throw new Error("Stream berhenti sebelum selesai.")
   }
   return finalResult
 }
