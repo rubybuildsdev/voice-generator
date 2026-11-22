@@ -1,7 +1,7 @@
 import * as React from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { Layers, Sparkles } from "lucide-react"
+import { LayoutGrid, Sparkles } from "lucide-react"
 
 import { BrainstormPanel } from "./components/BrainstormPanel"
 import { KaraokePlayer } from "./components/KaraokePlayer"
@@ -662,7 +662,7 @@ export default function App() {
         <div className="mpt-bar">
           <button type="button" className="mpt-brand" onClick={() => go("home", true)}>
             <StudioMark className="mpt-mark" />
-            <span>Mosaic Voice</span>
+            <span>Voxa Studio</span>
           </button>
 
           <nav className="mpt-links" ref={linksRef} aria-label="Sections">
@@ -678,14 +678,17 @@ export default function App() {
           <div className="mpt-nav-actions">
             <button
               type="button"
-              className="mpt-cta"
+              className="mpt-cta mvs-hub-icon-btn"
+              aria-label={`Studio Hub (${assets.length})`}
+              title={`Studio Hub (${assets.length} aset)`}
               onClick={() => {
                 setHubTab("assets")
                 setHubOpen(true)
                 void refreshAssets()
               }}
             >
-              <Layers size={14} /> Studio Hub ({assets.length})
+              <LayoutGrid size={16} />
+              {assets.length > 0 && <span className="mvs-hub-dot" aria-hidden="true" />}
             </button>
           </div>
 
@@ -1175,7 +1178,7 @@ export default function App() {
       <footer className="mpt-foot">
         <div className="mpt-inner">
           <div className="mpt-foot-mark" aria-hidden="true">
-            <PixelText text="Mosaic Voice" />
+            <PixelText text="Voxa Studio" />
           </div>
           <div className="mpt-foot-row">
             <span className="mpt-foot-brand">

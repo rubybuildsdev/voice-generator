@@ -24,8 +24,8 @@ float noise(vec2 p){
   return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
 }
 float fbm(vec2 p){ float v = 0.0; float a = 0.5; for (int i = 0; i < 4; i++){ v += a * noise(p); p = p * 2.03 + 17.0; a *= 0.5; } return v; }
-vec3 spectrum(float x){ return 0.5 + 0.5 * cos(6.28318 * (x + vec3(0.0, 0.33, 0.67))); }
 
+/* Home: mosaic of soft light tiles tinted by uAccent */
 vec3 mosaic(vec2 frag){
   float cell = max(uRes.y / 30.0, 9.0);
   vec2 id = floor(frag / cell);
@@ -49,44 +49,49 @@ vec3 mosaic(vec2 frag){
   vec3 cool = vec3(0.60, 0.70, 0.86);
   vec3 warm = vec3(0.96, 0.88, 0.78);
   vec3 col = mix(cool, warm, smoothstep(0.25, 0.75, n)) * L * 0.6;
-  col = mix(col, uAccent * L * 0.75, 0.2 * L);
+  col = mix(col, uAccent * L * 0.8, 0.28 * L);
   col *= tile * (0.82 + 0.36 * f.y);
   return col + vec3(0.010, 0.010, 0.014);
 }
 
+/* Capabilities: diagonal duotone prism facets harmonized with uAccent */
 vec3 prism(vec2 frag){
   vec2 p = frag / uRes.y;
   float t = uTime * 0.05;
-  vec3 col = mix(vec3(0.06, 0.08, 0.13), vec3(0.17, 0.22, 0.31), smoothstep(-0.2, 1.3, p.y + p.x * 0.15));
+  vec3 baseDark = vec3(0.03, 0.035, 0.05) + uAccent * 0.04;
+  vec3 baseMid = vec3(0.06, 0.07, 0.10) + uAccent * 0.14;
+  vec3 col = mix(baseDark, baseMid, smoothstep(-0.2, 1.3, p.y + p.x * 0.15));
   float d = dot(p, normalize(vec2(1.0, -0.58)));
   float warp = fbm(vec2(d * 1.2 - t, p.y * 0.8 + t)) * 0.7;
   float bands = d * 2.6 + warp - t * 1.6;
   float s = fract(bands);
   float facet = smoothstep(0.0, 0.03, s) * (1.0 - smoothstep(0.03, 0.6, s));
-  vec3 spec = spectrum(bands * 0.31 + p.y * 0.25 + t * 0.5);
   float beam = exp(-pow((d - (0.55 + 0.35 * sin(t * 2.0))) * 2.4, 2.0));
-  col += spec * facet * (0.09 + 0.3 * beam);
-  col += spec * beam * 0.06;
+  vec3 duo = mix(uAccent * 0.85, vec3(0.94, 0.97, 1.0), beam * 0.55);
+  col += duo * facet * (0.10 + 0.28 * beam);
+  col += uAccent * beam * 0.08;
   float glint = pow(max(0.0, 1.0 - abs(s - 0.02) * 30.0), 3.0) * beam;
-  col += vec3(0.9, 0.95, 1.0) * glint * 0.22;
-  col += uAccent * 0.03;
+  col += vec3(0.95, 0.97, 1.0) * glint * 0.20;
   return col;
 }
 
+/* Voices: flowing silk waves harmonized with uAccent (no clashing rainbow) */
 vec3 waves(vec2 frag){
   vec2 p = frag / uRes.y;
   float t = uTime * 0.11;
-  vec3 col = mix(vec3(0.07, 0.04, 0.08), vec3(0.20, 0.11, 0.19), smoothstep(0.0, 1.1, p.y));
+  vec3 darkBg = vec3(0.025, 0.028, 0.04) + uAccent * 0.035;
+  vec3 midBg = vec3(0.05, 0.055, 0.08) + uAccent * 0.12;
+  vec3 col = mix(darkBg, midBg, smoothstep(0.0, 1.1, p.y));
   for (int i = 0; i < 5; i++){
     float fi = float(i);
     float y = 0.52 + (fi - 2.0) * 0.055
       + 0.16 * sin(p.x * (1.5 + fi * 0.3) + t * (1.0 + fi * 0.22) + fi * 1.7)
       + 0.05 * sin(p.x * 3.7 - t * 1.4 + fi * 2.3);
     float dist = abs(p.y - y);
-    vec3 c = spectrum(fi * 0.16 + p.x * 0.12 - t * 0.25);
-    col += c * (exp(-dist * 42.0) * 0.28 + exp(-dist * 7.0) * 0.05);
+    vec3 ribbon = mix(uAccent * 0.72, vec3(0.94, 0.97, 1.0), fi * 0.15);
+    col += ribbon * (exp(-dist * 42.0) * 0.24 + exp(-dist * 7.0) * 0.045);
   }
-  col *= 0.88 + 0.24 * fbm(p * 2.2 + t);
+  col *= 0.88 + 0.22 * fbm(p * 2.2 + t);
   return col;
 }
 
@@ -119,6 +124,12 @@ export function MosaicSky({
   reduced: boolean
 }) {
   const skyRef = React.useRef<HTMLDivElement | null>(null)
+  const accentRef = React.useRef<[number, number, number]>(accentGl)
+
+  React.useEffect(() => {
+    accentRef.current = accentGl
+    mixRef.current.dirty = true
+  }, [accentGl, mixRef])
 
   React.useEffect(() => {
     const sky = skyRef.current
@@ -186,7 +197,6 @@ export function MosaicSky({
       ptrOn: gl.getUniformLocation(prog, "uPtrOn"),
       accent: gl.getUniformLocation(prog, "uAccent"),
     }
-    gl.uniform3f(U.accent, accentGl[0], accentGl[1], accentGl[2])
     root.dataset.sky = "webgl"
 
     const state = mixRef.current
@@ -221,6 +231,8 @@ export function MosaicSky({
       if (reduced && !state.dirty) return
       state.dirty = false
       ptrOn += (state.ptrOn - ptrOn) * 0.08
+      const ac = accentRef.current
+      gl.uniform3f(U.accent, ac[0], ac[1], ac[2])
       gl.uniform2f(U.res, w, h)
       gl.uniform1f(U.time, reduced ? 12.0 : (now - t0) / 1000)
       gl.uniform1f(U.mix, state.a + state.b)
@@ -254,7 +266,7 @@ export function MosaicSky({
       gl.getExtension("WEBGL_lose_context")?.loseContext()
       canvas.remove()
     }
-  }, [accentGl, mixRef, reduced, rootRef])
+  }, [mixRef, reduced, rootRef])
 
   return (
     <div ref={skyRef} className="mpt-sky" aria-hidden="true">

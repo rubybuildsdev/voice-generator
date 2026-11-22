@@ -1,4 +1,4 @@
-/* Append mode dropdown, custom glass WAV dropdown, inline Brainstorm morphing, Studio Hub modal, and dark slim scrollbars */
+/* Append mode dropdown, custom glass WAV dropdown, inline Brainstorm morphing, Studio Hub modal, dark slim scrollbars, and mobile polish */
 .mvs-tools-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .mvs-mode-trigger{gap:8px;padding:0 12px}
 .mvs-mode-menu{left:0;right:auto;min-width:260px;transform-origin:10% 100%}
@@ -17,7 +17,7 @@
 .mvs-brainstorm-inline{display:flex;flex-direction:column;gap:12px}
 .mvs-bs-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08)}
 .mvs-bs-title-wrap{display:flex;align-items:center;gap:10px;min-width:0}
-.mvs-bs-title-wrap strong{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
+.mvs-bs-title-wrap strong{display:block;font-size:15px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px}
 .mvs-bs-title-wrap small{display:block;font-size:12px;color:var(--mpt-mute)}
 .mvs-bs-spark{color:var(--mpt-a2);flex:none}
 .mvs-bs-actions{display:flex;gap:6px;flex:none}
@@ -26,7 +26,7 @@
 
 /* Centered Studio Hub Modal (Assets, Chat History, Settings) */
 .mvs-hub-backdrop{position:fixed;inset:0;z-index:70;background:rgba(5,5,8,.68);backdrop-filter:blur(8px);display:grid;place-items:center;padding:18px}
-.mvs-hub-modal{width:min(760px,100%);max-height:min(84svh,680px);padding:20px;display:flex;flex-direction:column;gap:16px;overflow:hidden}
+.mvs-hub-modal{width:min(760px,100%);max-height:min(84svh,680px);padding:20px;display:flex;flex-direction:column;gap:16px;overflow:hidden;background:rgba(16,16,20,.92)}
 .mvs-hub-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .mvs-hub-head .mvs-tab{display:inline-flex;align-items:center;gap:6px}
 .mvs-hub-body{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px}
@@ -43,7 +43,7 @@
 
 .mvs-settings-grid{display:grid;gap:12px}
 .mvs-setting-card{padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.mvs-setting-card strong{display:block;font-size:14px;font-weight:600}
+.mvs-setting-card strong{display:block;font-size:14px;font-weight:600;color:#fff}
 .mvs-setting-card p{font-size:12.5px;color:var(--mpt-mute);margin-top:2px}
 .mvs-setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .mvs-accent-swatches{display:flex;gap:6px}
@@ -58,3 +58,31 @@
 .mpt-menu::-webkit-scrollbar-thumb:hover,.mvs-karaoke-box::-webkit-scrollbar-thumb:hover,.mvs-segments::-webkit-scrollbar-thumb:hover,.mvs-pre::-webkit-scrollbar-thumb:hover,.mvs-hub-body::-webkit-scrollbar-thumb:hover,.mvs-bs-feed::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.32)}
 
 .mvs-bubble-loading{color:var(--mpt-a2);font-style:italic}
+
+/* Mobile & small viewport polish */
+@media (max-width:760px){
+  .mpt-hero{padding:76px 14px 56px;gap:22px;min-height:100svh;--mpt-pxs:4.6px}
+  .mpt-h1{gap:8px}
+  .mpt-composer{padding:15px 14px 12px;border-radius:20px}
+  .mpt-input{min-height:46px;font-size:14.5px}
+  .mpt-ph{font-size:14.5px}
+  .mpt-tools{flex-direction:row;align-items:center;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .mvs-tools-left{gap:6px;flex:1 1 auto;min-width:0}
+  .mpt-right{gap:6px;flex:none;margin-left:auto}
+  .mpt-model-wrap{margin-right:0}
+  .mpt-chip,.mvs-mode-trigger{height:30px;padding:0 9px;font-size:12px;border-radius:9px}
+  .mpt-model{height:30px;padding:0 8px;font-size:12px}
+  .mpt-send{width:34px;height:34px;margin-left:2px}
+  .mpt-send .mpt-picon{width:12px;height:12px}
+  .mpt-menu,.mvs-mode-menu,.mvs-wav-menu{min-width:210px;max-width:calc(100vw - 44px);max-height:220px}
+  .mvs-wav-label{max-width:96px}
+  .mvs-hub-backdrop{padding:10px}
+  .mvs-hub-modal{padding:14px;border-radius:18px;max-height:88svh;gap:12px}
+  .mvs-hub-head .mvs-tabs{flex-wrap:wrap}
+  .mvs-hub-head .mvs-tab{font-size:11.5px;padding:0 9px;height:28px}
+  .mvs-bs-title-wrap strong{max-width:190px;font-size:14px}
+  .mvs-bs-feed{max-height:220px}
+}
+
+.mvs-hub-icon-btn{position:relative;width:40px;height:40px;padding:0;border-radius:12px}
+.mvs-hub-dot{position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--mpt-a2);box-shadow:0 0 8px var(--mpt-a2)}
