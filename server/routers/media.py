@@ -1,4 +1,4 @@
-"""Endpoint penyajian file media WAV, VTT, dan JSON yang aman dengan cache terkontrol."""
+"""Endpoint penyajian file media audio, VTT, dan JSON yang aman dengan cache terkontrol."""
 
 from __future__ import annotations
 
@@ -16,6 +16,16 @@ from server.config import (
 
 router = APIRouter(prefix="/api", tags=["Media"])
 
+_AUDIO_MIME_TYPES: dict[str, str] = {
+    ".wav": "audio/wav",
+    ".mp3": "audio/mpeg",
+    ".m4a": "audio/mp4",
+    ".ogg": "audio/ogg",
+    ".flac": "audio/flac",
+    ".aac": "audio/aac",
+    ".webm": "audio/webm",
+}
+
 
 @router.get("/audio/{filename}")
 async def serve_audio(filename: str) -> FileResponse:
@@ -27,9 +37,10 @@ async def serve_audio(filename: str) -> FileResponse:
     if not target.exists() or not target.is_file():
         raise HTTPException(status_code=404, detail="File audio tidak ditemukan.")
 
+    media_type = _AUDIO_MIME_TYPES.get(target.suffix.lower(), "application/octet-stream")
     return FileResponse(
         path=target,
-        media_type="audio/wav",
+        media_type=media_type,
         filename=target.name,
         headers={
             "Accept-Ranges": "bytes",
@@ -50,7 +61,11 @@ async def serve_transcript(filename: str) -> FileResponse:
     if not target.exists() or not target.is_file():
         raise HTTPException(status_code=404, detail="File transkrip tidak ditemukan.")
 
-    media_type = "text/vtt; charset=utf-8" if target.suffix.lower() == ".vtt" else "application/json"
+    media_type = (
+        "text/vtt; charset=utf-8"
+        if target.suffix.lower() == ".vtt"
+        else "application/json"
+    )
     return FileResponse(
         path=target,
         media_type=media_type,

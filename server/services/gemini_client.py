@@ -50,7 +50,10 @@ def get_client() -> genai.Client:
                 raise GeminiConfigError(
                     "GEMINI_API_KEY belum diatur di file .env."
                 )
-            _client_instance = genai.Client(api_key=GEMINI_API_KEY)
+            _client_instance = genai.Client(
+                api_key=GEMINI_API_KEY,
+                http_options=types.HttpOptions(api_version="v1beta"),
+            )
         return _client_instance
 
 
@@ -185,3 +188,15 @@ def detect_active_model(force_refresh: bool = False) -> dict[str, Any]:
         _health_cache = result
         _health_cached_at = time.monotonic()
         return dict(result)
+
+def is_gemini_overload_error(exc: BaseException | None) -> bool:
+    """Mendeteksi error sementara 503 UNAVAILABLE / 429 RESOURCE_EXHAUSTED dari Gemini API."""
+    seen: set[int] = set()
+    cur: BaseException | None = exc
+    while cur is not None and id(cur) not in seen:
+        seen.add(id(cur))
+        msg = str(cur).upper()
+        if any(tok in msg for tok in ("503", "UNAVAILABLE", "HIGH DEMAND", "429", "RESOURCE_EXHAUSTED")):
+            return True
+        cur = cur.__cause__ or cur.__context__
+    return False

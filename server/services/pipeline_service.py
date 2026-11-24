@@ -19,6 +19,7 @@ from server.schemas import (
     TranscribeResponse,
     TTSResponse,
 )
+from server.services.gemini_client import is_gemini_overload_error
 from server.services.script_service import auto_tag_text, generate_script
 from server.services.title_service import generate_titles
 from server.services.transcribe_service import transcribe_audio
@@ -226,14 +227,19 @@ async def stream_pipeline(req: PipelineRequest) -> AsyncIterator[dict[str, str]]
                 "payload": final_response.model_dump(),
             },
         )
-    except Exception:
+    except Exception as exc:
         logger.exception("Kesalahan saat menjalankan pipeline SSE")
+        err_msg = (
+            "Server Gemini lagi padat/sibuk (503). Tunggu beberapa detik lalu klik Generate ulang."
+            if is_gemini_overload_error(exc)
+            else "Terjadi kesalahan saat memproses permintaan. Periksa input dan log server."
+        )
         yield _sse_event(
             "error",
             {
                 "step": "error",
                 "stage": "error",
-                "message": "Terjadi kesalahan saat memproses permintaan. Periksa input dan log server.",
+                "message": err_msg,
                 "progress": 0,
             },
         )

@@ -1,7 +1,7 @@
 import * as React from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { LayoutGrid, Sparkles } from "lucide-react"
+import { LayoutGrid, Sparkles, Upload } from "lucide-react"
 
 import { BrainstormPanel } from "./components/BrainstormPanel"
 import { KaraokePlayer } from "./components/KaraokePlayer"
@@ -28,6 +28,7 @@ import {
   loadStudioSettings,
   saveChatSession,
   saveStudioSettings,
+  uploadAndTranscribe,
 } from "./services/api"
 import type {
   ChatSession,
@@ -123,6 +124,7 @@ export default function App() {
   const voiceMenuRef = React.useRef<HTMLDivElement | null>(null)
   const wavBtnRef = React.useRef<HTMLButtonElement | null>(null)
   const wavMenuRef = React.useRef<HTMLDivElement | null>(null)
+  const audioFileInputRef = React.useRef<HTMLInputElement | null>(null)
 
   const linksRef = React.useRef<HTMLDivElement | null>(null)
   const pillRef = React.useRef<HTMLSpanElement | null>(null)
@@ -154,6 +156,9 @@ export default function App() {
   const [modeMenuOpen, setModeMenuOpen] = React.useState(false)
   const [voiceMenuOpen, setVoiceMenuOpen] = React.useState(false)
   const [wavMenuOpen, setWavMenuOpen] = React.useState(false)
+  const [localAudioFile, setLocalAudioFile] = React.useState<File | null>(null)
+  const [uploadingAudio, setUploadingAudio] = React.useState(false)
+  const [uploadError, setUploadError] = React.useState<string | null>(null)
   const [typed, setTyped] = React.useState("")
   const [focused, setFocused] = React.useState(false)
   const [nudge, setNudge] = React.useState(false)
@@ -174,7 +179,7 @@ export default function App() {
   const activeMode = MODE_OPTIONS.find((m) => m.id === intent) ?? MODE_OPTIONS[0]
   const showAutoTag = intent === "script"
   const showVoice = intent === "auto" || intent === "voice_only"
-  const wavHistory = React.useMemo(() => assets.filter((h) => h.type === "audio" && h.name.endsWith(".wav")), [assets])
+  const wavHistory = React.useMemo(() => assets.filter((h) => h.type === "audio"), [assets])
 
   const headWidth = React.useMemo(
     () => Math.max(...HEADLINE.map((l) => layoutPixels(l).width + 1)),
@@ -248,6 +253,33 @@ export default function App() {
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     if (phase === "brainstorm") return
+    if (intent === "transcribe" && localAudioFile) {
+      setPreviewDoc(null)
+      if (cardRef.current) prevHeight.current = cardRef.current.offsetHeight
+      setUploadError(null)
+      setUploadingAudio(true)
+      setPhase("building")
+      const started = performance.now()
+      void uploadAndTranscribe(localAudioFile)
+        .then((transcribeData) => {
+          setResult({
+            intent: "transcribe",
+            transcribe_data: transcribeData,
+            execution_time_sec: Number(((performance.now() - started) / 1000).toFixed(2)),
+          })
+          setLocalAudioFile(null)
+          setPhase("done")
+          void refreshAssets()
+        })
+        .catch((err) => {
+          setUploadError(err instanceof Error ? err.message : "Gagal mengunggah dan mentranskripsi audio.")
+          setPhase("idle")
+        })
+        .finally(() => {
+          setUploadingAudio(false)
+        })
+      return
+    }
     const clean = prompt.trim()
     if (!clean) {
       setNudge(true)
@@ -255,6 +287,7 @@ export default function App() {
       inputRef.current?.focus()
       return
     }
+    setUploadError(null)
     setPreviewDoc(null)
     if (cardRef.current) prevHeight.current = cardRef.current.offsetHeight
     void startPipeline({
@@ -631,7 +664,7 @@ export default function App() {
 
   const placeholderText =
     intent === "transcribe"
-      ? "Masukkan nama file .wav atau pilih dari dropdown WAV di bawah..."
+      ? "Pilih file audio dari komputer (MP3/WAV/M4A) atau dari riwayat studio..."
       : intent === "title"
         ? "Tulis topik video untuk dirisetkan 3 judul ber-CTR tinggi..."
         : intent === "script"
@@ -641,7 +674,7 @@ export default function App() {
             : typed
 
   const selectedWavLabel =
-    wavHistory.find((w) => w.name === prompt.trim())?.name || "Pilih WAV"
+    wavHistory.find((w) => w.name === prompt.trim())?.name || "Riwayat Audio"
 
   const latestLog = logs[logs.length - 1]?.message || "Menyiapkan proses..."
   const empty = !prompt.trim()
@@ -777,7 +810,7 @@ export default function App() {
                     )}
                   </div>
 
-                  {error && <div className="mvs-error-banner mpt-enter" role="alert">{error}</div>}
+                  {(uploadError || error) && <div className="mvs-error-banner mpt-enter" role="alert">{uploadError || error}</div>}
 
                   <div className="mpt-tools mpt-enter">
                     <div className="mvs-tools-left">
@@ -851,6 +884,35 @@ export default function App() {
                         >
                           <span>Auto-Tag</span>
                         </button>
+                      )}
+
+                      {intent === "transcribe" && (
+                        <>
+                          <input
+                            ref={audioFileInputRef}
+                            type="file"
+                            accept=".wav,.mp3,.m4a,.ogg,.flac,.aac,.webm,audio/*"
+                            className="mpt-sr"
+                            tabIndex={-1}
+                            onChange={(e) => {
+                              const picked = e.target.files?.[0] || null
+                              if (picked) {
+                                setLocalAudioFile(picked)
+                                setPrompt(picked.name)
+                              }
+                              e.target.value = ""
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="mpt-chip"
+                            onClick={() => audioFileInputRef.current?.click()}
+                            title="Pilih file audio dari folder komputer (WAV, MP3, M4A, OGG, FLAC)"
+                          >
+                            <Upload size={12} />
+                            <span>{localAudioFile ? "Ganti File" : "Pilih File"}</span>
+                          </button>
+                        </>
                       )}
 
                       {intent === "transcribe" && wavHistory.length > 0 && (
@@ -943,7 +1005,7 @@ export default function App() {
                         </div>
                       )}
 
-                      <button type="submit" className="mpt-send" aria-label="Generate" data-ready={empty ? "false" : "true"}>
+                      <button type="submit" className="mpt-send" aria-label="Generate" data-ready={empty && !(intent === "transcribe" && localAudioFile) ? "false" : "true"}>
                         <PixelIcon name="arrow" />
                       </button>
                     </div>
@@ -972,7 +1034,7 @@ export default function App() {
                       Memproses mode {activeMode.label}
                       {showVoice ? ` (${voice})` : ""}
                     </span>
-                    <span className="mpt-build-pct">{progress}%</span>
+                    <span className="mpt-build-pct">{uploadingAudio ? "Upload..." : `${progress}%`}</span>
                   </div>
                   <div className="mpt-progress mpt-enter" aria-hidden="true">
                     <span style={{ transform: `scaleX(${Math.max(0.04, progress / 100)})` }} />

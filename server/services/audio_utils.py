@@ -114,6 +114,60 @@ def atomic_write_text(target_path: Path, content: str, encoding: str = "utf-8") 
     atomic_write_bytes(target_path, content.encode(encoding))
 
 
+def _get_mp3_info(mp3_path: Path) -> dict[str, float | int]:
+    """Menghitung durasi, sample rate, dan frame MP3 dari header frame MPEG."""
+    file_size = mp3_path.stat().st_size
+    data = mp3_path.read_bytes()
+    idx = 0
+    if data.startswith(b"ID3") and len(data) >= 10:
+        id3_len = (data[6] << 21) | (data[7] << 14) | (data[8] << 7) | data[9]
+        idx = id3_len + 10
+
+    bitrates_v1_l3 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320]
+    samplerates_v1 = [44100, 48000, 32000]
+
+    frame_count = 0
+    detected_rate = 44100
+    while idx < len(data) - 4:
+        if data[idx] == 0xFF and (data[idx + 1] & 0xE0) == 0xE0:
+            b1 = data[idx + 1]
+            b2 = data[idx + 2]
+            ver_id = (b1 >> 3) & 3
+            layer_id = (b1 >> 1) & 3
+            br_idx = (b2 >> 4) & 15
+            sr_idx = (b2 >> 2) & 3
+            pad = (b2 >> 1) & 1
+
+            if ver_id == 3 and layer_id == 1 and 0 < br_idx < 15 and sr_idx < 3:
+                rate = samplerates_v1[sr_idx]
+                detected_rate = rate
+                br_kbps = bitrates_v1_l3[br_idx]
+                frame_len = int(144 * br_kbps * 1000 / rate) + pad
+                frame_count += 1
+                idx += frame_len
+            else:
+                idx += 1
+        else:
+            idx += 1
+
+    if frame_count > 0:
+        duration_sec = round(frame_count * 1152.0 / float(detected_rate), 3)
+        duration_frames = int(round(duration_sec * REMOTION_FPS))
+        return {
+            "duration_sec": duration_sec,
+            "duration_frames": duration_frames,
+            "sample_rate": detected_rate,
+            "file_size_bytes": file_size,
+        }
+
+    return {
+        "duration_sec": 0.0,
+        "duration_frames": 0,
+        "sample_rate": DEFAULT_SAMPLE_RATE,
+        "file_size_bytes": file_size,
+    }
+
+
 def get_wav_info(wav_path: Path) -> dict[str, float | int]:
     """Membaca metadata durasi, sample rate, frame Remotion 30 FPS, dan ukuran file secara aman."""
     if not wav_path.exists() or not wav_path.is_file():
@@ -125,6 +179,17 @@ def get_wav_info(wav_path: Path) -> dict[str, float | int]:
         }
 
     file_size = wav_path.stat().st_size
+    if wav_path.suffix.lower() == ".mp3":
+        try:
+            return _get_mp3_info(wav_path)
+        except Exception:
+            return {
+                "duration_sec": 0.0,
+                "duration_frames": 0,
+                "sample_rate": DEFAULT_SAMPLE_RATE,
+                "file_size_bytes": file_size,
+            }
+
     try:
         with wave.open(str(wav_path), "rb") as wf:
             frames = wf.getnframes()
@@ -138,9 +203,12 @@ def get_wav_info(wav_path: Path) -> dict[str, float | int]:
                 "file_size_bytes": file_size,
             }
     except (wave.Error, EOFError, OSError):
-        return {
-            "duration_sec": 0.0,
-            "duration_frames": 0,
-            "sample_rate": DEFAULT_SAMPLE_RATE,
-            "file_size_bytes": file_size,
-        }
+        try:
+            return _get_mp3_info(wav_path)
+        except Exception:
+            return {
+                "duration_sec": 0.0,
+                "duration_frames": 0,
+                "sample_rate": DEFAULT_SAMPLE_RATE,
+                "file_size_bytes": file_size,
+            }

@@ -33,7 +33,9 @@ def get_history_items(limit: int = 60) -> list[HistoryItem]:
     collected: list[tuple[float, HistoryItem]] = []
 
     if OUTPUT_AUDIO_DIR.exists():
-        for wav_path in OUTPUT_AUDIO_DIR.glob("*.wav"):
+        for wav_path in OUTPUT_AUDIO_DIR.iterdir():
+            if not wav_path.is_file() or wav_path.suffix.lower() not in ALLOWED_AUDIO_EXTENSIONS:
+                continue
             stat = wav_path.stat()
             stem = wav_path.stem
             vtt_file = OUTPUT_TRANSCRIPTS_DIR / f"{stem}.vtt"

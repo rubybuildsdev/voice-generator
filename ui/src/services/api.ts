@@ -9,6 +9,7 @@ import type {
   SSELogEvent,
   StudioSettings,
   TitleChatResponse,
+  TranscribeResponse,
   WordTimestamp,
 } from "../types/studio"
 
@@ -293,4 +294,18 @@ export async function executePipelineStream(
     throw new Error("Stream berhenti sebelum selesai.")
   }
   return finalResult
+}
+
+export async function uploadAndTranscribe(
+  file: File,
+  signal?: AbortSignal,
+): Promise<TranscribeResponse> {
+  const form = new FormData()
+  form.append("file", file)
+  const res = await fetch(`${API_BASE}/transcribe/upload`, {
+    method: "POST",
+    body: form,
+    signal,
+  })
+  return handleJson<TranscribeResponse>(res)
 }

@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Studio Riset & Naskah AI Indonesia 2026 — Bank 27 Judul & 9 Naskah Berbasis Data</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        canvas: '#FAF8F5',
+                        surface: '#FFFFFF',
+                        ink: '#1C1917',
+                        muted: '#57534E',
+                        tealbrand: '#0F766E',
+                        amberbrand: '#B45309',
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            background-color: #FAF8F5;
+            color: #1C1917;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 340px;
+            }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #F5F5F4;
+            border-radius: 9999px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #D6D3D1;
+            border-radius: 9999px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #A8A29E;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-teal-100 selection:text-teal-900 overflow-x-hidden">
+    <!-- Chosen Palette: Warm Alabaster & Deep Teal Editorial (#FAF8F5 background, #FFFFFF card surface, #1C1917 ink, #0F766E primary teal accent, #B45309 amber nuance accent) -->
+    <!-- Application Structure Plan: Task-oriented Single Page Application organized into 4 functional hubs: (1) Macro Ecosystem Data Radar with interactive Chart.js visualizations and dynamic takeaways to contextualize Indonesia's 2026 AI landscape; (2) Interactive Script & Title Studio featuring category filters, search, a master-detail workspace for all 9 HPAS-CTA scripts, 27 selectable titles, live persona switcher (Lo/Gue vs Kamu/Aku), one-click copy tools, methodological nuance guards, and direct citation links; (3) Quick Comparison Matrix linking all 9 pillars, analogies, and evidence anchors; and (4) Interactive 4-Step Anti-AI Slop Production Checklist. This structure prioritizes creator workflow efficiency over linear reading. -->
+    <!-- Visualization & Content Choices: Report Macro Data -> Goal: Inform & Compare -> Interactive Switchable Bar & Horizontal Bar Charts (Chart.js Canvas with 16-char label wrapping and dynamic insight callouts) -> Justification: Allows creators to visually inspect and verify key statistics across adoption, labor, token tax, cyber risk, and energy without overwhelming a single static chart. 9 Scripts & 27 Titles -> Goal: Organize & Produce -> Interactive Master-Detail Studio with live pronoun transformation and clipboard export -> Justification: Transforms dense research text into an immediately usable production tool. All icons use Unicode characters and Tailwind badges. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <header class="sticky top-0 z-40 bg-[#FAF8F5]/95 backdrop-blur border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2.5">
+                <span
+                    class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-teal-700 text-white font-bold text-lg shadow-sm">🎙️</span>
+                <div>
+                    <span
+                        class="font-extrabold text-stone-900 tracking-tight text-sm sm:text-base block leading-none">Riset
+                        & Naskah AI RI</span>
+                    <span class="font-mono text-[11px] text-teal-700 font-medium">DATA 2026 • 27 JUDUL • 9 NASKAH</span>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex items-center gap-1 bg-stone-200/70 p-1 rounded-xl text-xs font-semibold">
+                <a href="#dashboard"
+                    class="px-3 py-1.5 rounded-lg text-stone-700 hover:bg-white hover:text-stone-900 transition">📊
+                    Radar Data 2026</a>
+                <a href="#studio-naskah" class="px-3 py-1.5 rounded-lg bg-white text-teal-800 shadow-xs transition">🎬
+                    Studio 9 Naskah</a>
+                <a href="#matriks-ringkas"
+                    class="px-3 py-1.5 rounded-lg text-stone-700 hover:bg-white hover:text-stone-900 transition">🗂️
+                    Peta Indeks</a>
+                <a href="#panduan-produksi"
+                    class="px-3 py-1.5 rounded-lg text-stone-700 hover:bg-white hover:text-stone-900 transition">✅
+                    Checklist Syuting</a>
+            </nav>
+
+            <a href="#studio-naskah"
+                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shadow-xs transition">
+                <span>Ambil Naskah</span>
+                <span>↓</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-16">
+        <section class="bg-white border border-stone-200 rounded-3xl p-6 sm:p-10 shadow-xs">
+            <div class="max-w-4xl">
+                <div
+                    class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-mono font-semibold mb-4">
+                    <span>🇮🇩 EKOSISTEM AI & TECH INDONESIA • UPDATE NOVEMBER 2026</span>
+                    <span class="text-teal-400">•</span>
+                    <span>ANTI-AI SLOP</span>
+                </div>
+                <h1
+                    class="text-2xl sm:text-4xl lg:text-[40px] font-extrabold text-stone-900 tracking-tight leading-tight mb-4">
+                    Bank Judul & Naskah Siap Pakai Niche AI dan Tech Indonesia Berbasis Bukti Ilmiah
+                </h1>
+                <p class="text-stone-600 text-sm sm:text-base leading-relaxed mb-6">
+                    Aplikasi interaktif ini mengemas ulang seluruh riset konten AI & teknologi Indonesia menjadi ruang
+                    kerja produksi siap pakai: <strong>27 opsi judul</strong>, <strong>9 naskah lengkap berpola Hook →
+                        Problem → Agitate → Solution → CTA</strong> (durasi ideal 60–90 detik), analogi sederhana untuk
+                    membedah konsep rumit, catatan nuansa metodologi agar kontenmu kebal kritik, serta tautan bukti
+                    ilmiah dan rilis resmi (BPS, OJK/IASC, BSSN, Komdigi, MIT, OpenAI, ACL, EMNLP, NAACL).
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+                <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-stone-200/90">
+                    <div class="flex items-center justify-between text-xs font-mono text-stone-500 mb-1">
+                        <span>PENGGUNA AI RI (#1 ASEAN)</span>
+                        <span>🚀</span>
+                    </div>
+                    <div class="text-2xl font-extrabold text-stone-900">162 Juta+</div>
+                    <p class="text-xs text-stone-600 mt-1">69 miliar prompt/thn, namun token/kapita SEA baru 10% level
+                        AS.</p>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-stone-200/90">
+                    <div class="flex items-center justify-between text-xs font-mono text-stone-500 mb-1">
+                        <span>ESTIMASI KERUGIAN SCAM</span>
+                        <span>🚨</span>
+                    </div>
+                    <div class="text-2xl font-extrabold text-amber-700">Rp104,3 T</div>
+                    <p class="text-xs text-stone-600 mt-1">Survei GASA Nov 2026; 73% jalur via WA & lonjakan deepfake
+                        +1.400%.</p>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-stone-200/90">
+                    <div class="flex items-center justify-between text-xs font-mono text-stone-500 mb-1">
+                        <span>PENGANGGURAN USIA MUDA</span>
+                        <span>💼</span>
+                    </div>
+                    <div class="text-2xl font-extrabold text-stone-900">17,50%</div>
+                    <p class="text-xs text-stone-600 mt-1">TPT 15–24 thn BPS Agu 2026 (~3,7× TPT nasional 4,75%).</p>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-stone-200/90">
+                    <div class="flex items-center justify-between text-xs font-mono text-stone-500 mb-1">
+                        <span>ANOMALI SIBER NASIONAL</span>
+                        <span>🛡️</span>
+                    </div>
+                    <div class="text-2xl font-extrabold text-teal-800">5,2 Miliar</div>
+                    <p class="text-xs text-stone-600 mt-1">Catatan BSSN (>180/detik), sementara Lembaga PDP belum lahir.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard" class="space-y-6">
+            <div class="max-w-3xl">
+                <span class="font-mono text-xs font-semibold uppercase tracking-wider text-teal-700">01 • Eksplorasi
+                    Data Kuantitatif</span>
+                <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 mt-1">Radar Paradoks Ekosistem AI & Digital
+                    Indonesia 2026</h2>
+                <p class="text-sm text-stone-600 mt-2 leading-relaxed">
+                    Bagian ini memvisualisasikan ketegangan utama dalam laporan riset: besarnya adopsi pengguna dan
+                    kebutuhan infrastruktur berbanding terbalik dengan kedalaman pemanfaatan, kesiapan keamanan siber,
+                    dan ketimpangan bahasa. Klik tombol kategori di masing-masing panel grafik untuk membandingkan angka
+                    antar-sektor sebelum mengutipnya ke dalam video.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div
+                    class="bg-white border border-stone-200 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <span
+                                class="font-mono text-xs font-semibold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg">GRAFIK
+                                A • ADOPSI & KETENAGAKERJAAN</span>
+                            <div class="inline-flex rounded-xl bg-stone-100 p-1 text-xs font-semibold" id="chart1Tabs">
+                                <button type="button" data-view="adoption"
+                                    class="chart1-btn px-2.5 py-1 rounded-lg bg-white text-stone-900 shadow-xs transition">Adopsi
+                                    AI RI</button>
+                                <button type="button" data-view="labor"
+                                    class="chart1-btn px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 transition">Kerja
+                                    & Gen Z</button>
+                            </div>
+                        </div>
+                        <h3 id="chart1Title" class="text-base sm:text-lg font-bold text-stone-900">Paradoks Adopsi
+                            Digital & Kedalaman AI Indonesia (%)</h3>
+                        <p id="chart1Subtitle" class="text-xs text-stone-500 mt-0.5 mb-4">Sumber: APJII 2026,
+                            Google–Temasek–Bain e-Conomy SEA 2026, AWS & Microsoft WTI 2026.</p>
+                    </div>
+
+                    <div class="chart-container my-2">
+                        <canvas id="chartEcosystem"></canvas>
+                    </div>
+
+                    <div id="chart1Insight"
+                        class="mt-4 p-3.5 rounded-2xl bg-[#FAF8F5] border border-stone-200 text-xs text-stone-700 leading-relaxed">
+                        <strong>Insight Kunci:</strong> Penetrasi internet RI mencapai 81,72% (235,26 juta jiwa), namun
+                        80–85% pemakaian AI masih sebatas tugas konsumen ringan di smartphone dan 76% perusahaan
+                        pengadopsi masih berhenti di tahap dasar.
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white border border-stone-200 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <span
+                                class="font-mono text-xs font-semibold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg">GRAFIK
+                                B • RISIKO, BAHASA & ENERGI</span>
+                            <div class="inline-flex rounded-xl bg-stone-100 p-1 text-xs font-semibold" id="chart2Tabs">
+                                <button type="button" data-view="tokentax"
+                                    class="chart2-btn px-2.5 py-1 rounded-lg bg-white text-stone-900 shadow-xs transition">Pajak
+                                    Token</button>
+                                <button type="button" data-view="cyber"
+                                    class="chart2-btn px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 transition">Scam
+                                    & Siber</button>
+                                <button type="button" data-view="energy"
+                                    class="chart2-btn px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 transition">Listrik
+                                    DC</button>
+                            </div>
+                        </div>
+                        <h3 id="chart2Title" class="text-base sm:text-lg font-bold text-stone-900">Rasio "Pajak Token"
+                            Bahasa Indonesia vs Bahasa Inggris</h3>
+                        <p id="chart2Subtitle" class="text-xs text-stone-500 mt-0.5 mb-4">Sumber: Audit Tokenizer
+                            FertiScope / FLORES-200 (1,00× = Baseline Bahasa Inggris).</p>
+                    </div>
+
+                    <div class="chart-container my-2">
+                        <canvas id="chartRisks"></canvas>
+                    </div>
+
+                    <div id="chart2Insight"
+                        class="mt-4 p-3.5 rounded-2xl bg-[#FAF8F5] border border-stone-200 text-xs text-stone-700 leading-relaxed">
+                        <strong>Insight Kunci:</strong> Kalimat identik dalam Bahasa Indonesia membutuhkan 1,24× lebih
+                        banyak token di GPT-4o dan 1,52×–1,53× di Llama-3.1 serta GPT-4 dibanding Bahasa Inggris,
+                        membuat biaya API dan memori konteks startup lokal lebih boros 24%–53%.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="studio-naskah" class="space-y-6">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                <div class="max-w-3xl">
+                    <span class="font-mono text-xs font-semibold uppercase tracking-wider text-teal-700">02 • Ruang
+                        Kerja Produksi Kreator</span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 mt-1">Studio Interaktif 9 Naskah
+                        HPAS-CTA & 27 Opsi Judul</h2>
+                    <p class="text-sm text-stone-600 mt-2 leading-relaxed">
+                        Pilih salah satu dari 9 pilar topik di panel kiri untuk membedah naskah lengkapnya. Di panel
+                        kanan, kamu bisa memilih 1 dari 3 variasi judul, membaca analogi penyederhana konsep, mengubah
+                        sapaan otomatis antara gaya <strong>Gaul Gen Z (Lo/Gue)</strong> dan <strong>Semi-Kasual
+                            Nasional (Kamu/Aku)</strong>, serta menyalin naskah atau daftar tautan ilmiahnya dalam satu
+                        klik.
+                    </p>
+                </div>
+
+                <div class="w-full lg:w-72">
+                    <label for="scriptSearch" class="sr-only">Cari topik, angka, atau kata kunci</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-3 flex items-center text-stone-400 text-sm">🔍</span>
+                        <input id="scriptSearch" type="text" placeholder="Cari topik, analogi, atau data..."
+                            class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-stone-300 text-xs sm:text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2" id="categoryFilters">
+                <button type="button" data-cat="all"
+                    class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-teal-700 text-white shadow-xs transition">Semua
+                    Topik (9)</button>
+                <button type="button" data-cat="ekonomi"
+                    class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-stone-200 text-stone-700 hover:border-teal-600 transition">💼
+                    Ekonomi & Kerja</button>
+                <button type="button" data-cat="kognitif"
+                    class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-stone-200 text-stone-700 hover:border-teal-600 transition">🧠
+                    Otak, Budaya & Kreatif</button>
+                <button type="button" data-cat="keamanan"
+                    class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-stone-200 text-stone-700 hover:border-teal-600 transition">🛡️
+                    Scam, Siber & Infrastruktur</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div class="lg:col-span-4 space-y-2.5 max-h-[680px] overflow-y-auto pr-1 custom-scrollbar"
+                    id="topicSelectorList"></div>
+
+                <div class="lg:col-span-8 bg-white border border-stone-200 rounded-3xl p-5 sm:p-8 shadow-xs space-y-6"
+                    id="scriptWorkspace">
+                    <div class="flex flex-wrap items-start justify-between gap-4 border-b border-stone-200 pb-5">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                                <span id="wsBadgeNumber"
+                                    class="font-mono text-xs font-bold px-2.5 py-0.5 rounded-md bg-teal-700 text-white">NASKAH
+                                    #1</span>
+                                <span id="wsBadgePillar"
+                                    class="font-mono text-xs font-semibold px-2.5 py-0.5 rounded-md bg-stone-100 text-stone-700">Adopsi
+                                    & Ekonomi AI RI</span>
+                                <span class="font-mono text-xs text-stone-500">⏱️ 60–90 Detik</span>
+                            </div>
+                            <h3 id="wsTopicHeading" class="text-lg sm:text-xl font-extrabold text-stone-900">Paradoks
+                                162 Juta Pengguna AI Indonesia yang Baru Dipakai Seujung Kuku</h3>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2">
+                            <div class="inline-flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 text-xs font-semibold"
+                                title="Ubah sapaan kata ganti dalam naskah">
+                                <button type="button" id="personaGenZ"
+                                    class="px-2.5 py-1 rounded-lg bg-white text-teal-800 shadow-xs transition">Lo /
+                                    Gue</button>
+                                <button type="button" id="personaNasional"
+                                    class="px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 transition">Kamu /
+                                    Aku</button>
+                            </div>
+                            <button type="button" id="btnCopyFullScript"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shadow-xs transition">
+                                <span>📋 Salin Naskah</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="font-mono text-xs font-bold uppercase tracking-wider text-stone-500">Pilih
+                                Variasi Judul (Klik untuk Aktifkan & Salin)</span>
+                            <button type="button" id="btnCopyTitle"
+                                class="text-xs font-semibold text-teal-700 hover:text-teal-900 underline">Salin Judul
+                                Terpilih</button>
+                        </div>
+                        <div id="wsTitlesContainer" class="grid grid-cols-1 gap-2"></div>
+                    </div>
+
+                    <div class="p-4 sm:p-5 rounded-2xl bg-amber-50/80 border border-amber-200/90">
+                        <div
+                            class="flex items-center gap-2 text-xs font-mono font-bold text-amber-800 uppercase tracking-wider mb-1.5">
+                            <span>💡 ANALOGI SEDERHANA (JEMBATAN PEMAHAMAN AUDIENS)</span>
+                        </div>
+                        <p id="wsAnalogyText" class="text-sm text-stone-800 leading-relaxed"></p>
+                    </div>
+
+                    <div class="space-y-3" id="wsScriptBlocks"></div>
+
+                    <div class="p-4 sm:p-5 rounded-2xl bg-stone-100 border border-stone-200/90 space-y-2">
+                        <div
+                            class="flex items-center gap-2 text-xs font-mono font-bold text-stone-700 uppercase tracking-wider">
+                            <span>⚠️ CATATAN NUANSA & BATASAN DATA (AGAR KREDIBEL SAAT DITANYA BALIK)</span>
+                        </div>
+                        <ul id="wsNuanceList"
+                            class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-stone-700 leading-relaxed"></ul>
+                    </div>
+
+                    <div class="pt-2 border-t border-stone-200 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="font-mono text-xs font-bold uppercase tracking-wider text-teal-800">🔗 BUKTI
+                                PENDUKUNG & LINK SUMBER RESMI</span>
+                            <button type="button" id="btnCopyCitations"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-semibold transition">
+                                <span>📌 Salin Sumber untuk Pinned Comment</span>
+                            </button>
+                        </div>
+                        <div id="wsCitationsList" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="matriks-ringkas" class="space-y-6">
+            <div class="max-w-3xl">
+                <span class="font-mono text-xs font-semibold uppercase tracking-wider text-teal-700">03 • Peta Referensi
+                    Cepat</span>
+                <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 mt-1">Matriks Indeks 9 Topik, Analogi &
+                    Jangkar Bukti</h2>
+                <p class="text-sm text-stone-600 mt-2 leading-relaxed">
+                    Gunakan tabel ringkas ini untuk merencanakan kalender konten mingguanmu. Setiap baris merangkum
+                    judul utama, metafora visual, dan rujukan data utamanya—klik tombol <strong>"Buka di
+                        Studio"</strong> pada baris mana pun untuk langsung memuat naskah penuhnya ke ruang kerja di
+                    atas.
+                </p>
+            </div>
+
+            <div class="bg-white border border-stone-200 rounded-3xl overflow-hidden shadow-xs">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr
+                                class="bg-stone-100 border-b border-stone-200 text-[11px] font-mono uppercase tracking-wider text-stone-600">
+                                <th class="py-3.5 px-4">No</th>
+                                <th class="py-3.5 px-4">Pilar & Judul Utama</th>
+                                <th class="py-3.5 px-4">Analogi Inti</th>
+                                <th class="py-3.5 px-4">Jangkar Data & Riset</th>
+                                <th class="py-3.5 px-4 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matrixTableBody" class="divide-y divide-stone-200 text-xs sm:text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="panduan-produksi" class="space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div class="max-w-3xl">
+                    <span class="font-mono text-xs font-semibold uppercase tracking-wider text-teal-700">04 • Eksekusi
+                        Video Ber-Retensi Tinggi</span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 mt-1">Panduan Produksi Anti-AI Slop
+                        untuk Kreator</h2>
+                    <p class="text-sm text-stone-600 mt-2 leading-relaxed">
+                        Naskah berbasis riset bisa terasa kaku jika hanya dibacakan datar dari teleprompter. Centang
+                        keempat langkah eksekusi di bawah ini saat menyiapkan rekaman TikTok, Instagram Reels, atau
+                        YouTube Shorts agar penyampaianmu terasa tajam, autentik, dan terpercaya.
+                    </p>
+                </div>
+                <div
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-stone-200 shadow-xs">
+                    <span class="text-xs font-semibold text-stone-600">Status Persiapan:</span>
+                    <span id="checklistProgress" class="font-mono text-sm font-extrabold text-teal-700">0 / 4
+                        Siap</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="productionChecklistGrid"></div>
+        </section>
+    </main>
+
+    <footer class="border-t border-stone-200 bg-white mt-16 py-8">
+        <div
+            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-stone-500">
+            <div>
+                <p class="font-bold text-stone-800">Bank Judul & Naskah Siap Pakai Niche AI dan Tech Indonesia (Edisi
+                    Data 2026)</p>
+                <p class="mt-1">Dikurasi dari riset ilmiah peer-reviewed/preprint (ACL, EMNLP, NAACL, MDPI, IEEE Access,
+                    MIT Media Lab, OpenAI) serta rilis resmi BPS, APJII, BSSN, OJK/IASC, Komdigi, BRIN, DJKI, ILO, WEF,
+                    Microsoft, dan Google–Temasek–Bain.</p>
+            </div>
+            <a href="#studio-naskah" class="font-semibold text-teal-700 hover:text-teal-900 shrink-0">Kembali ke Studio
+                Naskah ↑</a>
+        </div>
+    </footer>
+
+    <div id="toastNotification"
+        class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 bg-stone-900 text-white px-4 py-3 rounded-2xl shadow-lg flex items-center gap-2.5 text-xs sm:text-sm font-semibold">
+        <span class="text-teal-400">✓</span>
+        <span id="toastMessage">Berhasil disalin ke clipboard!</span>
+    </div>
+
+    <script>
+        const scriptsData = [
+            {
+                id: 1,
+                category: 'ekonomi',
+                icon: '🚀',
+                pillar: 'Adopsi & Ekonomi AI RI',
+                topicHeading: 'Paradoks 162 Juta Pengguna AI Indonesia yang Baru Dipakai Seujung Kuku',
+                anchorSummary: '162 juta user AI RI (#1 ASEAN), 69B prompt/thn, token SEA 10% AS (e-Conomy SEA 2026); gap >11× power user (SEAPPI 2026)',
+                titles: [
+                    { tag: 'Judul Utama', text: 'Indonesia No. 1 Pakai AI se-ASEAN, Tapi Cuma Buat Tugas Receh? Ini Faktanya' },
+                    { tag: 'Variasi Penasaran', text: '162 Juta Orang Indo Sudah Pakai AI, Kenapa Baru 10% dari Level Amerika?' },
+                    { tag: 'Variasi Provokatif Halus', text: 'Jangan Bangga Dulu Pake ChatGPT Tiap Hari Kalau Level Lo Masih di Sini' }
+                ],
+                analogy: 'Pakai AI canggih cuma buat bikin caption atau terjemahin kalimat pendek itu ibarat beli mobil sport Ferrari harga miliaran, tapi tiap hari cuma dipakai muter komplek buat beli seblak. Mesinnya sanggup lari 300 km/jam, tapi lo baru berani masuk gigi satu.',
+                hook: 'Indonesia resmi jadi negara nomor satu dengan pengguna AI terbanyak se-Asia Tenggara—tembus lebih dari 162 juta orang tiap bulan. Keren banget, kan? Tunggu dulu, jangan bangga dulu sebelum lo dengar angka yang satunya lagi.',
+                problem: 'Menurut laporan e-Conomy SEA 2026 dari Google, Temasek, dan Bain yang baru rilis November 2026, meski orang Indonesia ngirim sekitar 69 miliar prompt AI per tahun, rata-rata pemakaian token per orang di Asia Tenggara baru sekitar 10% dari level Amerika Serikat. Sekitar 80% sampai 85% aktivitas AI kita masih mentok di urusan konsumen ringan lewat HP—kayak cari info dasar, terjemahin teks, atau bikin draf tulisan simpel. Di sisi bisnis juga sama: survei AWS bareng Strand Partners nemuin 76% perusahaan di Indonesia yang udah adopsi AI masih berhenti di level efisiensi dasar doang.',
+                agitate: 'Ini ibarat beli mobil sport Ferrari, tapi tiap hari cuma dipakai muter komplek buat beli seblak. Parahnya lagi, laporan SEAPPI Oktober 2026 nunjukin jurang skill di dalam Indonesia sendiri udah makin jomplang: pengguna di persentil ke-95 alias kalangan 5% paling jago di sini pakai thinking tokens lebih dari 11 kali lipat dibanding pengguna kelas tengah (median). Jadi sementara mayoritas masih pakai versi gratisan buat tanya hal receh—cuma sekitar 1 sampai 2% populasi kawasan yang berlangganan akun AI berbayar—segelintir orang Indonesia lain udah masuk Top 5 dunia pakai ChatGPT buat coding (Codex) dan analisis data berat. Kalau jarak ini dibiarin, yang bakal makin melesat bukan yang sekadar pakai AI, tapi yang bisa nyuruh AI kerja kompleks.',
+                solution: 'Biar lo naik kelas dari penumpang jadi sopir beneran, berhenti memperlakukan AI kayak Google Search versi cerewet. Mulai minggu ini, pilih satu kerjaan rutin lo yang paling makan waktu—entah rekap data Excel, riset kompetitor, atau bikin kerangka presentasi—lalu bangun alur kerja tetap (workflow) di mana AI jadi asisten riset atau sparring partner, bukan cuma mesin copy-paste. Di survei Work Trend Index 2026 Microsoft, 82% pekerja advanced di Indonesia ngaku bisa bikin output kerja yang setahun lalu nggak mungkin mereka kerjain sendiri. Bedanya cuma satu: mereka nggak cuma nanya satu kalimat lalu kelar.',
+                cta: 'Jujur deh di kolom komentar: selama ini AI paling sering lo pakai buat apa—masih level nanya-nanya dan bikin caption, atau udah lo sambungin ke kerjaan berat? Gue pengin tahu realitanya di audiens sini.',
+                nuances: [
+                    'Angka >162 juta pengguna bulanan RI dan ~69 miliar kueri/tahun berasal dari paparan Google Indonesia untuk e-Conomy SEA 2026 (Nov 2026), sedangkan metrik "~10% level AS per kapita" dan "1–2% pengguna berbayar" adalah angka regional SEA-6 (termasuk Indonesia).',
+                    'Angka 76% perusahaan RI masih di tahap dasar bersumber dari survei AWS & Strand Partners (2025, disorot lagi di 2026); pada edisi 2026 adopsi AI perusahaan RI mencapai 40% dan 75% melaporkan peningkatan produktivitas. Perhatikan bahwa studi AWS & Microsoft merupakan riset yang disponsori penyedia teknologi.',
+                    'Peringkat Top 5 dunia Indonesia pada laporan SEAPPI 2026 merujuk spesifik pada pemakaian ChatGPT untuk Codex (pemrograman) dan analisis data.'
+                ],
+                citations: [
+                    { label: 'Portal Resmi e-Conomy SEA 2026 (Google, Temasek, Bain)', url: 'https://economysea.withgoogle.com/' },
+                    { label: 'CNN Indonesia — Pengguna AI RI Tembus 162 Juta (12 Nov 2026)', url: 'https://www.cnnindonesia.com/teknologi/20261112105200-192-1426240/nomor-1-di-asia-tenggara-pengguna-ai-indonesia-tembus-162-juta' },
+                    { label: 'SEAPPI — Closing the AI Capability Gap in Indonesia (PDF Okt 2026)', url: 'https://seapublicpolicy.org/wp-content/uploads/2026/10/SEAPPI-Closing-the-AI-Capability-Gap-in-Indonesia.pdf' },
+                    { label: 'Microsoft Source Asia — Work Trend Index 2026 Indonesia', url: 'https://news.microsoft.com/source/asia/2026/06/30/work-trend-index-2026-microsoft-33-pekerja-indonesia-berada-di-garis-depan-adopsi-ai/?lang=id' },
+                    { label: 'Kompas Tekno — Adopsi AI Perusahaan RI Tembus 40% (AWS)', url: 'https://tekno.kompas.com/read/2026/08/07/13310077/adopsi-ai-di-indonesia-tembus-40-persen-aws-ungkap-banyak-perusahaan-belum-siap' }
+                ]
+            },
+            {
+                id: 2,
+                category: 'kognitif',
+                icon: '🧠',
+                pillar: 'Otak & Cognitive Debt',
+                topicHeading: 'Efek Utang Kognitif AI: Bukan Bikin Bodoh Tapi Bikin Otak Jarang Nge-Gym',
+                anchorSummary: 'EEG 54 peserta (MIT Media Lab 2025); n=666 cognitive offloading (Gerlich 2025); CHI 2025 (n=319); sintesis 47 riset RI',
+                titles: [
+                    { tag: 'Judul Utama', text: 'Keseringan Copas AI Bikin Otak Nunggak Cicilan? Ini Hasil Scan MIT' },
+                    { tag: 'Variasi Relatable', text: 'Kenapa Habis Ngerjain Tugas Pakai ChatGPT Lo Malah Nggak Inget Isinya?' },
+                    { tag: 'Variasi Ilmiah Populer', text: 'Bukan "Bikin Bodoh", Ini Nama Asli Efek Negatif AI ke Otak Manusia' }
+                ],
+                analogy: 'Menyerahkan semua proses mikir ke AI itu kayak daftar gym buat gedein otot, tapi pas angkat barbel lo pakai derek hidrolik. Barbelnya memang keangkat super cepat dan mulus, tapi otot lo nggak pernah kena beban—bukan berarti ototnya rusak, cuma lama-lama lemes dan lupa rasanya ngangkat berat.',
+                hook: 'Pernah nggak, lo beresin esai atau laporan kerja pakai AI dalam 10 menit, hasilnya rapi banget—tapi sejam kemudian pas ditanya isinya, kepala lo mendadak nge-blank? Tenang, itu bukan cuma perasaan lo. Peneliti udah nemu istilahnya: cognitive debt, alias utang kognitif.',
+                problem: 'Pada Juni 2025, tim peneliti MIT Media Lab ngerilis studi preprint yang masang alat EEG di kepala 54 peserta selama 4 bulan buat ngukur aktivitas otak saat nulis esai. Hasilnya: grup yang langsung dibantu ChatGPT sejak awal punya konektivitas saraf paling lemah dibanding grup yang mikir sendiri, bahkan susah banget ngutip isi tulisan mereka sendiri. Pola ini sejalan sama riset peer-reviewed Michael Gerlich di jurnal Societies 2025 terhadap 666 orang: makin sering seseorang melakukan cognitive offloading—alias melempar beban mikir ke AI—skor berpikir kritisnya berkorelasi makin rendah, dan kelompok usia lebih muda tercatat lebih rentan ketergantungan. Di studi Microsoft Research bareng CMU pada konferensi CHI 2025 terhadap 319 pekerja pengetahuan juga ketemu pola serupa: makin tinggi rasa percaya kita ke jawaban AI, makin berkurang upaya berpikir kritis kita.',
+                agitate: 'Ini kayak lo bayar gym tapi angkat barbel pakai derek hidrolik. Tugasnya beres, tapi otot mikir lo nggak pernah dilatih. Kenapa disebut "utang"? Karena lo nikmatin kemudahan instan hari ini, tapi "cicilannya" ditagih nanti pas lo harus presentasi dadakan, debat argumen di ruang meeting, atau ujian tanpa internet—dan otak lo keteteran karena jarang nyambungin ide sendiri. Di studi literatur sistematis pada jurnal pendidikan Indonesia Mei 2026 yang mensintesis 47 riset pendidikan tinggi, pemakaian AI pasif terbukti erat kaitannya sama surface learning, alias belajar cuma di kulit luar.',
+                solution: 'Tapi plot twist-nya penting banget nih: peneliti MIT sendiri tegas melarang orang bilang "AI bikin bodoh atau merusak otak". Bahkan di sesi keempat eksperimen MIT, peserta yang nulis pakai otak sendiri dulu baru masukin ke AI (Brain-to-LLM) justru nunjukin keterlibatan saraf dan daya ingat yang jauh lebih tinggi dibanding grup yang langsung pakai AI dari awal. Riset terhadap mahasiswa di UNIMED juga nemuin ChatGPT berkorelasi positif sama berpikir kritis kalau dipakai etis sebagai alat bantu belajar. Jadi aturannya simpel: pakai metode "Draf Jelek Sendiri Dulu". Tulis 3 sampai 5 poin argumen dari kepala lo sendiri—seberantakan apa pun—baru kasih ke AI dan suruh dia ngritik celah logika lo, bukan nulis dari nol.',
+                cta: 'Coba jujur, dari skala 1 sampai 10, seberapa sering lo langsung lempar tugas mentah-mentah ke AI sebelum mikir sendiri? Share di komentar, sekalian tag temen kampus atau kantor lo yang kerjaannya tinggal Ctrl+C Ctrl+V.',
+                nuances: [
+                    'Studi MIT Media Lab (Kosmyna et al., 2025) adalah preprint yang sedang melalui proses peer review dengan sampel terbatas (54 peserta area Boston, 18 peserta di sesi ke-4) dan sempat mendapat catatan metodologis dari akademisi lain. Hindari klaim bombastis bahwa AI menyebabkan "kerusakan otak".',
+                    'Studi Gerlich (2025, n=666) bersifat korelasional (r = -0,49 hingga -0,68; p < 0,001) yang dimediasi cognitive offloading, bukan bukti tunggal sebab-akibat.',
+                    'Riset UNIMED (2025) bersifat asosiatif pada sampel kecil satu program studi (58 mahasiswa PPKN).'
+                ],
+                citations: [
+                    { label: 'MIT Media Lab — Preprint arXiv:2506.08872 (Your Brain on ChatGPT)', url: 'https://arxiv.org/abs/2506.08872' },
+                    { label: 'Laman Resmi & Klarifikasi Peneliti MIT Media Lab', url: 'https://www.media.mit.edu/projects/your-brain-on-chatgpt/overview/' },
+                    { label: 'Michael Gerlich (2025) — Jurnal Peer-Reviewed MDPI Societies (n=666)', url: 'https://www.mdpi.com/2075-4698/15/1/6' },
+                    { label: 'Microsoft Research & CMU — CHI 2025 (319 Knowledge Workers)', url: 'https://www.microsoft.com/en-us/research/publication/the-impact-of-generative-ai-on-critical-thinking-self-reported-reductions-in-cognitive-effort-and-confidence-effects-from-a-survey-of-knowledge-workers/' },
+                    { label: 'Jurnal Ilmiah Wahana Pendidikan (Mei 2026) — Sintesis 47 Riset RI', url: 'https://jurnal.peneliti.net/index.php/JIWP/article/download/14159/10050/' }
+                ]
+            },
+            {
+                id: 3,
+                category: 'keamanan',
+                icon: '🚨',
+                pillar: 'Scam & Deepfake Suara',
+                topicHeading: 'Suara 3 Detik Bisa Kuras Rekening: Darurat Scam Rp104,3 Triliun & Deepfake RI',
+                anchorSummary: 'Estimasi Rp104,3 T & 73% via WA (GASA 2026); 80% baru sadar >12 jam (OJK); +1.400% deepfake; VALL-E 2 & ITB',
+                titles: [
+                    { tag: 'Judul Utama', text: 'Modal Suara 3 Detik Bisa Kuras Rekening: Darurat Scam Rp104,3 Triliun RI' },
+                    { tag: 'Variasi Praktis', text: 'Jangan Angkat Lama-Lama Nomor Asing! Begini Cara AI Kloning Suara Lo dalam 3 Detik' },
+                    { tag: 'Variasi Bikin Melek', text: '80% Pelapor Penipuan ke OJK Baru Sadar Setelah 12 Jam, Padahal Duit Raib Hitungan Menit' }
+                ],
+                analogy: 'Voice cloning AI itu ibarat tukang kunci jahat yang bisa bikin duplikat kunci rumah lo cuma dari foto kunci yang nggak sengaja ke-post di Instagram Story. Bedanya, sekarang yang dicomot bukan gambar besi kunci—tapi potongan suara lo 3 detik dari TikTok, podcast, atau telepon spam.',
+                hook: 'Kalau tiba-tiba nyokap atau temen deket lo nelepon nangis-nangis minta transfer darurat, suaranya 100% mirip—jangan langsung transfer. Tahun 2026 ini, suara asli pun udah nggak bisa dijadiin bukti identitas.',
+                problem: 'Laporan Global Anti-Scam Alliance bareng Mastercard yang baru rilis November 2026 memperkirakan kerugian warga Indonesia akibat penipuan online tembus Rp104,3 triliun dalam setahun terakhir. 70% responden dewasa di Indonesia pernah kena upaya scam, dan 73% jalurnya lewat WhatsApp. Yang bikin makin ngeri: menurut data Komdigi yang dikompilasi pelaku industri verifikasi identitas, serangan deepfake di Indonesia melonjak sekitar 1.400% secara tahunan dari 2024 ke 2025. Secara teknis, riset Microsoft lewat model VALL-E dan VALL-E 2 menunjukkan AI neural audio codec udah bisa kloning suara manusia secara realistis cuma dari 3 detik rekaman audio. Bahkan peneliti Indonesia dari lingkungan ITB di jurnal IEEE Access 2024 udah nunjukin arsitektur serupa bisa menghasilkan kloning suara Bahasa Indonesia dengan kemiripan tinggi.',
+                agitate: 'Bayangin betapa gampangnya. Lo sering bikin konten, kirim voice note, atau ngobrol lama sama penelpon "salah sambung"? Itu ibarat lo lagi kasih sampel kunci rumah ke maling. Bareskrim Polri aja sepanjang 2025 udah nangkap sindikat deepfake yang nyatut wajah dan suara pejabat sampai narik ratusan korban lintas provinsi. Yang paling nyesek dari catatan OJK: 80% korban yang melapor ke mereka baru ngeh ketipu setelah rata-rata 12 jam, padahal duit di rekening pindah tangan dalam hitungan detik sampai menit. Di survei GASA, 3 dari 4 korban yang kehilangan duit sampai kena dampak stres mental sedang hingga berat.',
+                solution: 'Ada 3 benteng simpel yang wajib lo pasang bareng keluarga mulai malam ini. Pertama, bikin "Kata Sandi Keluarga" (Family Safe Word)—satu kata random yang cuma orang rumah yang tahu kalau ada telepon "darurat minta duit". Kedua, kalau ditelpon nomor asing yang suaranya aneh atau maksa panik, langsung tutup; makin lama lo ngobrol, makin banyak sampel suara lo yang bisa direkam. Verifikasi balik lewat telepon atau video call ke nomor asli yang udah tersimpan. Ketiga, kalau amit-amit telanjur transfer, jangan bengong atau malu—langsung lapor secepatnya ke bank dan ke Indonesia Anti-Scam Centre (IASC) OJK di iasc.ojk.go.id. Per November 2026, IASC udah ngeblokir lebih dari 743 ribu rekening penipu dan ngembaliin Rp208,9 miliar dana korban yang cepet melapor.',
+                cta: 'Lo udah pernah dapat chat WA atau telepon aneh yang modusnya makin niat tahun ini? Spill modusnya di kolom komentar biar makin banyak orang yang kebal dan nggak jadi korban berikutnya!',
+                nuances: [
+                    'Jangan campur aduk dua angka triliun: Rp104,3 triliun adalah estimasi proyeksi survei GASA (n=1.160 responden dewasa RI, Maret–April 2026) ke populasi dewasa nasional (termasuk kasus tak terlapor), sedangkan Rp9,1–9,3 triliun adalah nilai kerugian resmi yang benar-benar dilaporkan ke IASC OJK (737.686 laporan). Keduanya tidak boleh dijumlahkan.',
+                    'Laporan Sumsub 2026–2027 mencatat total insiden fraud konvensional di Indonesia sebenarnya turun 64%, tetapi kompleksitas penipuan dan ancaman deepfake justru melonjak signifikan.'
+                ],
+                citations: [
+                    { label: 'CNN Indonesia — Kerugian Scam RI Rp104,3 T & 73% via WA (GASA 2026)', url: 'https://www.cnnindonesia.com/teknologi/20261118155510-185-1428599/penipuan-online-rugikan-ri-rp104-triliun-paling-sering-via-whatsapp' },
+                    { label: 'Kompas Money — OJK: 80% Korban Baru Sadar Setelah 12 Jam (17 Nov 2026)', url: 'http://money.kompas.com/read/2026/11/17/174424326/ojk-siapkan-aplikasi-anti-scam-masyarakat-bisa-cek-rekening-dan-nomor-penipu' },
+                    { label: 'Kompas Money — IASC OJK Blokir 743 Ribu Rekening & Kembali Rp208,9 M', url: 'http://money.kompas.com/read/2026/11/19/191239226/indodax-aplikasi-anti-scam-ojk-bisa-bantu-masyarakat-cegah-penipuan-digital' },
+                    { label: 'Microsoft Research — VALL-E 2 Voice Cloning 3 Detik (arXiv:2406.05370)', url: 'https://arxiv.org/pdf/2406.05370' },
+                    { label: 'Riset ITB (IEEE Access 2024) — Indonesian Voice Cloning VALL-E', url: 'https://www.researchgate.net/publication/387206356_Indonesian_Voice_Cloning_Text-to-Speech_System_with_Vall-E_Based_Model_and_Speech_Enhancement' },
+                    { label: 'Hukumonline — Kasus Sindikat Deepfake Pejabat RI', url: 'https://www.hukumonline.com/berita/a/deepfake-menyebar-cepat--hukum-bergerak-lambat-lt68f065103ad53/' }
+                ]
+            },
+            {
+                id: 4,
+                category: 'ekonomi',
+                icon: '💼',
+                pillar: 'Kerja & Pengangguran Gen Z',
+                topicHeading: 'Pengangguran Nasional Turun, Tapi Gen Z Malah Naik ke 17,50% di Era AI',
+                anchorSummary: 'TPT muda 17,50% vs nasional 4,75% (BPS Agu 2026); >60% IT entry-level global minta ≥3 tahun (ILO 2026); gap 31 poin kantor RI',
+                titles: [
+                    { tag: 'Judul Utama', text: 'Pengangguran Nasional Turun, Kenapa Gen Z Malah Naik ke 17,50% di Era AI?' },
+                    { tag: 'Variasi Karier', text: 'Loker "Entry-Level" Makin Langka Gegara AI? Ini Data Resmi BPS & ILO 2026' },
+                    { tag: 'Variasi Strategi', text: 'Jangan Cuma Ngandelin Ijazah! Ini Celah Skill 31 Poin di Kantor RI yang Bisa Lo Ambil' }
+                ],
+                analogy: 'Yang terjadi di dunia kerja Gen Z sekarang itu ibarat tangga karier yang anak tangga paling bawahnya dicopot. Dulu fresh graduate bisa naik pelan-pelan dari tugas admin atau junior dulu; sekarang tugas junior udah banyak dikerjain AI, jadi perusahaan langsung minta kandidat yang sanggup loncat ke lantai dua.',
+                hook: 'Data terbaru BPS Agustus 2026 bilang pengangguran Indonesia secara nasional turun ke 4,75%. Kelihatannya aman? Cek lagi ke bawah: pengangguran usia muda 15–24 tahun malah naik ke 17,50%—hampir 3,7 kali lipat rata-rata nasional.',
+                problem: 'Ini bukan fenomena lokal doang. Laporan Global Employment Trends for Youth 2026 dari ILO mencatat 67 juta anak muda dunia nggak kerja, dan salah satu pemicunya jelas: posisi entry-level kayak admin, klerikal, sales dasar, sampai teknis pemula mulai menyusut seiring perubahan teknologi dan AI. Di laporan lanjutan ILO Oktober 2026 yang mengutip analisis global atas hampir 4 juta lowongan LinkedIn, 35% loker berlabel "entry-level" ternyata minta pengalaman bertahun-tahun—dan di bidang IT atau software, lebih dari 60% loker entry-level minta pengalaman minimal 3 tahun.',
+                agitate: 'Ini ibarat anak tangga paling bawah di tangga karier dicopot. Perusahaan makin ogah bayar mahal buat ngajarin tugas dasar dari nol kalau AI udah bisa bikin drafnya dalam 10 detik. Di Future of Jobs Report 2025 dari World Economic Forum, 39% core skills pekerja global diprediksi berubah atau usang sampai 2030, dan 40% perusahaan berencana memangkas posisi yang tugasnya bisa diotomatisasi AI. Kalau kita masih lamar kerja cuma modal IPK dan skill copy-paste yang gampang digantiin prompt, ya wajar CV kita mental terus.',
+                solution: 'Tapi ada celah gede banget yang jarang disadari anak muda. Lihat data Work Trend Index 2025 Microsoft untuk Indonesia: 95% bos di sini yakin bakal pakai agen AI dalam 1–2 tahun ke depan, dan 87% pimpinan udah paham konsepnya—tapi baru 56% karyawan yang paham. Ada gap pemahaman 31 poin persentase di kantor-kantor Indonesia! Plus, Komdigi juga nyatet Indonesia masih butuh tambahan 600 ribu talenta digital tiap tahun buat ngejar target 9 juta talenta di 2030. Artinya, cara menangnya bukan musuhin AI, tapi jadi junior yang langsung bawa leverage. Bangun 2–3 proyek portofolio nyata yang nunjukin lo bisa gabungin AI buat nyelesaiin masalah bisnis, lengkap sama kemampuan berpikir kritis dan quality control—dua skill teratas yang paling diprioritaskan responden Indonesia di Work Trend Index 2026.',
+                cta: 'Buat lo yang lagi job hunting atau baru masuk kerja tahun ini, syarat loker paling nggak masuk akal apa yang pernah lo temuin? Tulis di komentar—biar kita lihat bareng kondisi lapangan aslinya!',
+                nuances: [
+                    'Kenaikan TPT usia 15–24 tahun ke 17,50% pada Agustus 2026 dipengaruhi banyak faktor struktural sekaligus (perlambatan ekonomi, keterbatasan lapangan kerja formal, dan ketidaksesuaian kurikulum dengan industri), bukan semata-mata gara-gara AI.',
+                    'Angka ">60% loker entry-level IT minta pengalaman ≥3 tahun" berasal dari ringkasan ILO Oktober 2026 atas analisis global hampir 4 juta lowongan LinkedIn, bukan sampel khusus Indonesia saja.'
+                ],
+                citations: [
+                    { label: 'Kontan — Data BPS Agustus 2026: Pengangguran Usia Muda Naik ke 17,50%', url: 'https://nasional.kontan.co.id/news/data-bps-jumlah-pengangguran-usia-muda-meningkat-pada-agustus-2026' },
+                    { label: 'ILO — Global Employment Trends for Youth 2026 (11 Agu 2026)', url: 'https://www.ilo.org/resource/news/youth-unemployment-rises-young-people-face-harder-road-decent-work' },
+                    { label: 'ILO Brief PDF — Breaking the Youth Experience Trap (Okt 2026)', url: 'https://www.ilo.org/sites/default/files/2026-10/ILO%20brief%20breaking%20youth%20experience%20trap%202026%20SIQ.pdf' },
+                    { label: 'WEF — Future of Jobs Report 2025 (PDF)', url: 'https://reports.weforum.org/docs/WEF_Future_of_Jobs_Report_2025.pdf' },
+                    { label: 'Microsoft WTI 2025 Indonesia — Gap 31 Poin Pimpinan vs Karyawan', url: 'https://news.microsoft.com/id-id/2025/06/23/microsoft-rilis-laporan-work-trend-index-2025-dorong-potensi-indonesia-lewat-kolaborasi-manusia-dan-ai/' },
+                    { label: 'Kompas — Komdigi: RI Butuh 600 Ribu Talenta Digital per Tahun', url: 'https://nasional.kompas.com/read/2025/06/27/23213411/komdigi-sebut-indonesia-butuh-600000-talenta-digital-baru-setiap-tahun' }
+                ]
+            },
+            {
+                id: 5,
+                category: 'kognitif',
+                icon: '🗣️',
+                pillar: 'Bias Budaya & Token Tax',
+                topicHeading: 'Riset Ungkap AI Global Gagap Budaya RI dan Kita Kena Pajak Bahasa',
+                anchorSummary: 'COPAL-ID (NAACL 2024: 66,91% vs 95%), IndoMMLU (EMNLP 2023), IndoSafety (EMNLP 2025), Token Tax 1,24×–1,53×',
+                titles: [
+                    { tag: 'Judul Utama', text: 'Riset Ungkap AI Global Gagap Budaya RI dan Kita Kena "Pajak Bahasa"' },
+                    { tag: 'Variasi Kocak Berbobot', text: 'Kenapa ChatGPT Bingung Beda Nasi Kuning vs Nasi Uduk? Cek Riset Ilmiah Ini' },
+                    { tag: 'Variasi Developer & Startup', text: 'Ngetik Prompt Pakai Bahasa Indonesia Ternyata Lebih Mahal 24%–53% di API AI!' }
+                ],
+                analogy: 'AI global pas ngadepin Bahasa Indonesia itu kayak bule pintar lulusan kampus top yang baru mendarat di Jakarta: jago baca buku teks bahasa Inggris, tapi begitu diajak kondangan bingung kenapa syukuran masuk UI makannya nasi kuning bukan nasi uduk—eh, udah gitu pas naik taksi argonya dikali 1,5 kali lipat cuma gara-gara dia ngomong Bahasa Indonesia.',
+                hook: 'Tahu nggak, waktu lo ngetik prompt pakai Bahasa Indonesia ke AI luar negeri, lo sebenernya lagi bayar "pajak bahasa" sampai 53% lebih boros dibanding orang yang ngetik pakai Bahasa Inggris—padahal kualitas paham budayanya malah lebih rendah?',
+                problem: 'Ini bukan opini, tapi hasil beberapa riset ilmiah top dunia. Di konferensi NAACL 2024, peneliti bikin ujian budaya lokal Indonesia bernama COPAL-ID. Contoh soalnya simpel banget buat kita: "Anak itu diterima masuk UI"—paling masuk akal keluarganya makan nasi kuning atau nasi uduk? Atau "Pria itu memperbaharui KK"—dia baru nikah atau baru wisuda? Buat penutur asli Jakarta, akurasinya hampir sempurna sekitar 95%. Tapi model AI multibahasa umum rata-rata cuma dapat 66,91%—nyaris kayak lempar koin! Sebelumnya di studi IndoMMLU (EMNLP 2023), GPT-3.5 bahkan cuma lulus ujian tingkat SD di Indonesia dan gagal di SMP, SMA, apalagi soal bahasa daerah.',
+                agitate: 'Udah gitu, ada masalah tersembunyi bernama Token Tax yang dibedah peneliti Oxford dan sejumlah studi NLP internasional. AI kan baca teks dalam potongan bernama token, dan biaya API dihitung per token. Di audit tokenizer berbasis kalimat identik FLORES-200 (FertiScope), Bahasa Indonesia butuh 1,24 kali lipat token di GPT-4o dan 1,52 sampai 1,53 kali lipat di Llama-3.1 dan GPT-4 dibanding Bahasa Inggris. Artinya, startup Indonesia yang bangun produk AI lokal otomatis nanggung biaya lebih mahal dan memori konteks lebih cepat penuh. Plus, riset IndoSafety di EMNLP 2025 nemuin filter keamanan AI ikut kendur pas pakai bahasa lokal: unsafe rate GPT-4o pada prompt pertanyaan naik dari 7,6% di Bahasa Indonesia formal jadi 17,2% di Bahasa Minangkabau!',
+                solution: 'Kabar baiknya, ada dua hal yang bisa lo lakuin langsung. Pertama, buat urusan coding, analisis kompleks, atau system prompt yang butuh hemat token di API, tulis instruksi kerangkanya dalam Bahasa Inggris lalu minta output-nya dalam Bahasa Indonesia—biaya token lebih irit dan penalarannya sering lebih presisi. Kedua, kalau lo butuh konteks budaya atau bahasa daerah, mulai pantau dan uji ekosistem LLM berdaulat lokal seperti Sahabat-AI besutan GoTo dan Indosat—yang sudah naik kelas ke 70 miliar parameter, dukung bahasa Jawa, Sunda, Bali, sampai Batak, dan di 2026 diperkuat kolaborasi AI Factory NVIDIA Nemotron. Tapi tetap wajib verifikasi manual, karena di riset IndoSafety 2025, model lokal versi awal pun masih butuh banyak penguatan keamanan di isu sensitif daerah.',
+                cta: 'Coba tes sekarang: kasih satu idiom atau tebakan budaya daerah lo ke AI favorit lo, terus tulis di komentar—dia nyambung atau malah ngawur total?',
+                nuances: [
+                    'Vintage data IndoMMLU (2023): Riset Koto et al. menguji GPT-3.5 dan model terbuka generasi 2023, bukan model frontier 2026. Namun pola kesenjangan budaya dan keamanan bahasa daerah tetap terkonfirmasi pada COPAL-ID (NAACL 2024) dan IndoSafety (EMNLP 2025).',
+                    'Rasio 1,24×–1,53× untuk Bahasa Indonesia (aksara Latin) jauh lebih hemat dibanding aksara non-Latin seperti Burma (11,2×) atau Sinhala (8,66×), namun tetap menjadi beban ekstra 24%–53% pada skala pemakaian API enterprise.'
+                ],
+                citations: [
+                    { label: 'ACL Anthology — COPAL-ID (NAACL 2024 PDF)', url: 'https://aclanthology.org/2024.naacl-long.77.pdf' },
+                    { label: 'ACL Anthology — IndoMMLU (EMNLP 2023)', url: 'https://aclanthology.org/2023.emnlp-main.760/' },
+                    { label: 'ACL Anthology — IndoSafety (EMNLP 2025 PDF)', url: 'https://aclanthology.org/2025.emnlp-main.465.pdf' },
+                    { label: 'University of Oxford — Language Model Tokenizers & Token Tax (arXiv:2305.15425)', url: 'https://arxiv.org/pdf/2305.15425' },
+                    { label: 'Komdigi DJED — Peluncuran Aplikasi Sahabat-AI 70B', url: 'https://djed.komdigi.go.id/news/peluncuran-aplikasi-sahabat-ai-oleh-goto-dan-indosat' },
+                    { label: 'Indosat Ooredoo Hutchison — Kolaborasi NVIDIA Nemotron (21 Mar 2026)', url: 'https://ioh.co.id/id/contents?slug=ioh-nvidia-nemotron' }
+                ]
+            },
+            {
+                id: 6,
+                category: 'keamanan',
+                icon: '⚡',
+                pillar: 'Energi & Air Data Center',
+                topicHeading: 'Sisi Fisik Cloud AI: Dari Listrik 20 GW Sampai Drama Galon Kosong di Batam',
+                anchorSummary: '159 data center sedot 2.378 GWh (PLN), butuh +20 GW (ESDM), Demo Batam Okt 2026, riset air UC Riverside & Rare',
+                titles: [
+                    { tag: 'Judul Utama', text: '"Cloud" AI Nggak di Awan: Listrik 20 GW dan Drama Galon Kosong di Batam' },
+                    { tag: 'Variasi Fakta vs Mitos', text: 'Beneran Satu Chat AI Bikin Bumi Kering? Cek Matematika Air dan Listrik RI' },
+                    { tag: 'Variasi Investigatif', text: 'Indonesia Banjir Investasi Data Center AI, Siapa yang Nanggung Tagihan Air & Listriknya?' }
+                ],
+                analogy: 'Kata "cloud" itu bikin kita mikir AI ngambang bebas di awan. Padahal wujud aslinya adalah kulkas raksasa seukuran stadion bola berisi ribuan komputer super panas yang nyala 24 jam nonstop—butuh pasokan listrik selevel kota besar dan jutaan liter air dingin biar prosesornya nggak meleleh.',
+                hook: 'Tanggal 5 Oktober 2026 kemarin, puluhan emak-emak di Batam demo bawa galon kosong di depan gerbang kawasan data center Nongsa Digital Park. Lah, apa hubungannya galon kosong sama teknologi AI yang katanya serba "cloud"?',
+                problem: 'Karena cloud itu aslinya bukan awan—melainkan gedung berisi ribuan server panas yang haus listrik dan air pendingin. Di Indonesia, data PLN per September 2026 mencatat 159 pelanggan data center aja udah menyedot listrik 2.378 gigawatt hour. Menteri ESDM Bahlil Lahadalia bahkan mengungkap pengembangan pusat data RI bakal butuh tambahan listrik 20 gigawatt—setara sekitar 20% total kapasitas listrik nasional kita sekarang! Khusus di Batam, BP Batam memperkirakan kebutuhan listrik data center mulai melampaui separuh beban puncak pulau itu pada 2029.',
+                agitate: 'Nah, biar kita nggak termakan hoaks, duduk perkaranya harus adil. Menurut ringkasan lembaga lingkungan Rare yang memperbarui metodologi riset UC Riverside (Making AI Less "Thirsty"), satu prompt teks AI modern sebenarnya cuma makan sekitar 3 sampai 10 mililiter air—jauh lebih kecil dari produksi daging sapi yang butuh sekitar 1.700 liter untuk seporsinya. Di kasus Batam pun, BP Batam dan pengelola air membantah data center nyedot Waduk Nongsa yang mengering akibat kemarau, karena pendinginnya ambil dari kawasan industri Kabil. Tapi inti masalahnya menurut peneliti air dan WALHI adalah lokasi dan tata kelola: Batam itu pulau tanpa sumber air alami besar, warga sempat beli 2 drum air Rp125 ribu sehari selama 3 bulan, sementara menurut WALHI sampai sekarang Indonesia belum punya regulasi khusus data center AI yang mewajibkan transparansi konsumsi air dan energi secara mandiri.',
+                solution: 'Jadi solusinya bukan berhenti total pakai AI sambil merasa bersalah tiap ngetik satu pertanyaan. Di level individu, pakai AI secara lebih efisien—jangan pakai model reasoning paling berat atau generate puluhan gambar berulang cuma buat hal receh. Tapi yang jauh lebih berdampak adalah pengawasan kebijakan publik: dukung syarat wajib closed-loop cooling, desalinasi air laut mandiri seperti proyek SWRO 1.200 liter per detik yang mulai dibangun di Batam, energi terbarukan, dan keterbukaan laporan efisiensi air (WUE) sebelum izin pusat data baru diteken.',
+                cta: 'Menurut lo, investasi data center triliunan rupiah di Indonesia itu lebih banyak bawa cuan ekonomi atau justru berisiko bikin konflik sumber daya lokal kalau aturannya belum siap? Yuk adu argumen sehat di kolom komentar!',
+                nuances: [
+                    'Wajib berimbang di kasus Batam: BP Batam dan PT Air Batam Hilir (ABH) membantah pasokan Waduk Nongsa (turun dari 80 Lps ke 30 Lps akibat kemarau) disalurkan ke data center NDP, menegaskan pendingin memakai pasokan Kabil Industrial Estate (KIE), dan pemerintah sedang membangun desalinasi air laut SWRO 1.200 Lps.',
+                    'Hindari mitos internet lama bahwa "satu prompt AI menghabiskan 500 ml air". Di riset Li et al. (Communications of the ACM), 500 ml air setara 10–65 permintaan pada baseline GPT-3 (~16,9 ml/prompt), dan turun menjadi ~3–10 ml/prompt pada sistem modern menurut ringkasan Rare.'
+                ],
+                citations: [
+                    { label: 'Mongabay Indonesia — Kronologi Demo Nongsa, Tanggapan BP Batam & Kritik WALHI (10 Okt 2026)', url: 'https://mongabay.co.id/2026/10/10/batam-krisis-air-warga-demo-data-center/' },
+                    { label: 'ANTARA — PLN Catat 159 Data Center Sedot 2.378 GWh (26 Sep 2026)', url: 'https://www.antaranews.com/berita/5759716/pln-sebut-konsumsi-energi-data-center-sebesar-2378-gwh' },
+                    { label: 'detikFinance — ESDM: Data Center Butuh Tambahan Listrik 20 GW', url: 'https://finance.detik.com/energi/d-8714931/data-center-butuh-tambahan-listrik-20-gw-setara-20-kapasitas-ri' },
+                    { label: 'UC Riverside — Making AI Less Thirsty (Communications of the ACM PDF)', url: 'https://crystal.uta.edu/~mislam/pdfs/2025_CACM.pdf' },
+                    { label: 'Rare — AI & Water Use: Context, Scale, and Justice (PDF)', url: 'https://rare.org/wp-content/uploads/2026/05/AI-and-Water-Use-Updated.pdf' },
+                    { label: 'ANTARA — Batam Bangun Desalinasi SWRO Air Pusat Data (5 Nov 2026)', url: 'https://www.antaranews.com/berita/5848335/pemerintah-siapkan-pasokan-listrik-dan-air-untuk-data-center-di-batam' }
+                ]
+            },
+            {
+                id: 7,
+                category: 'keamanan',
+                icon: '🛡️',
+                pillar: 'Siber & UU PDP RI',
+                topicHeading: '5,2 Miliar Anomali Siber dan UU PDP yang Aturannya Jalan Tanpa Wasit',
+                anchorSummary: '5,2 miliar anomali 2025 (BSSN), 52% Gen Z kena siber (Kaspersky 2026), PP 33/2026 aktif 16 Jan 2027 vs belum ada Lembaga PDP',
+                titles: [
+                    { tag: 'Judul Utama', text: '5,2 Miliar Anomali Siber di RI, Tapi "Wasit" Data Pribadi Kita Belum Lahir' },
+                    { tag: 'Variasi Menohok Gen Z', text: '52% Gen Z Pernah Kena Serangan Siber, Padahal Katanya Paling Melek Tech?' },
+                    { tag: 'Variasi Hukum & Tech', text: 'Tanggal 16 Januari 2027 PP Data Pribadi Berlaku, Tapi Siapa yang Ngedenda Kalau Bocor?' }
+                ],
+                analogy: 'Situasi privasi data di Indonesia sekarang kayak pertandingan bola di liga paling brutal sedunia: buku aturannya udah dicetak 225 pasal lengkap sama ancaman kartu merah dan denda gede, tapi pas peluit mau ditiup ternyata wasitnya belum direkrut.',
+                hook: 'Lo pernah kesel nggak, data kita berkali-kali bocor tapi ujung-ujungnya cuma dengar ucapan "kami sedang investigasi" tanpa ada yang didenda? Ternyata ada alasan hukum yang kocak sekaligus miris di baliknya—sampai November 2026 ini, wasit pelindung data pribadi Indonesia belum terbentuk.',
+                problem: 'Lihat dulu medan perangnya. BSSN mencatat sepanjang 2025 Indonesia diserbu 5,2 miliar anomali trafik siber—rata-rata lebih dari 180 potensi serangan tiap detik, dan 93,78% dikaitkan sama potensi malware serta ransomware. Baru 3,5 bulan pertama 2026 aja udah terdeteksi 1,5 miliar anomali lagi. Kita juga masih ingat tragedi PDNS 2 Surabaya tahun 2024 saat ransomware Brain Cipher mengganggu layanan 239 dari 282 instansi pengguna gara-gara celah keamanan dan persoalan backup. Nah, dari sisi hukum, UU PDP sebenarnya sudah berlaku penuh dan aturan turunannya—PP 33 Tahun 2026—bakal aktif tanggal 16 Januari 2027, dengan ancaman denda administratif sampai 2% pendapatan tahunan. Masalahnya, Lembaga PDP yang wajib ngawasin dan ngejatuhin sanksi itu sampai November 2026 masih mandek di draf Perpres, sampai digugat ke Mahkamah Konstitusi!',
+                agitate: 'Ini ibarat main bola tanpa wasit: pas ada kebocoran data, tindak lanjut sementara Komdigi masih mentok di surat peringatan tertulis dan rekomendasi. Ironisnya, di saat negara masih nyiapin wasit, kita sendiri malah sering buka pintu lebar-lebar. Survei global Kaspersky di 18 negara termasuk Indonesia yang rilis Agustus 2026 nemuin 52% Gen Z pernah jadi korban serangan siber—17% akun medsosnya diretas, 12% akun game-nya raib. Padahal kita generasi yang paling lama hidup online, tapi cuma 27% yang pasang antivirus di HP dan cuma 28% yang rutin backup data. Merasa tech-savvy ternyata nggak otomatis bikin kebal diretas.',
+                solution: 'Sambil kita kawal pemerintah segera bentuk Lembaga PDP yang beneran independen, amankan dulu "rumah digital" lo sendiri malam ini dalam 5 menit. Satu: aktifkan 2FA lewat aplikasi authenticator (bukan cuma SMS OTP yang makin rawan diakalin) di email utama, m-banking, dan medsos. Dua: pakai password manager biar satu kebocoran di web receh nggak bikin semua akun lo ikut jebol. Tiga: nyalain auto-backup terenkripsi buat dokumen dan foto penting lo—jangan tunggu HP hilang atau kena malware baru nyesel.',
+                cta: 'Cek jujur HP lo sekarang: berapa dari 3 langkah tadi yang udah aktif di akun lo—0, 1, 2, atau 3-3nya? Drop angkanya di komentar!',
+                nuances: [
+                    'Meski Lembaga PDP belum berdiri per November 2026, kewajiban pengendali data pribadi di bawah UU No. 27/2022 tetap berlaku secara hukum (termasuk kewajiban notifikasi 3×24 jam) dan PP 33/2026 aktif 16 Januari 2027.',
+                    '"5,2 miliar anomali trafik" BSSN adalah deteksi trafik mencurigakan/potensi ancaman, bukan 5,2 miliar peretasan sukses.',
+                    'Survei Kaspersky Maret 2026 (dirilis Agustus 2026) mencakup 7.200 responden dari 18 negara termasuk Indonesia.'
+                ],
+                citations: [
+                    { label: 'InvestorTrust — BSSN: 5,2 Miliar Anomali Trafik Siber RI (16 Apr 2026)', url: 'https://investortrust.id/business/100269/bssn-sebut-5-2-miliar-anomali-trafik-jadi-ancaman-siber-sektor-keungan-paling-rentan' },
+                    { label: 'Hukumonline — Menunggu Lembaga PDP yang Benar-Benar Independen (11 Nov 2026)', url: 'https://www.hukumonline.com/berita/a/menunggu-lembaga-pdp-yang-benar-benar-independen-lt6af43120e356e/' },
+                    { label: 'ELSAM — Otoritas PDP Belum Terbentuk, Siapa Awasi Kebocoran Data? (4 Nov 2026)', url: 'https://www.elsam.or.id/kebebasan-dasar/otoritas-pdp-belum-terbentuk--siapa-awasi-kebocoran-data-pribadi-' },
+                    { label: 'Media Indonesia — Riset Kaspersky: 52% Gen Z Jadi Korban Serangan Siber (2 Agu 2026)', url: 'https://mediaindonesia.com/teknologi/917329/riset-kaspersky-generasi-z-paling-aktif-online-tapi-minim-perlindungan-siber' },
+                    { label: 'Mekari — Panduan PP 33/2026 & Denda Administratif 2% (20 Nov 2026)', url: 'https://mekari.com/blog/uu-pdp-perlindungan-data-pribadi/' }
+                ]
+            },
+            {
+                id: 8,
+                category: 'ekonomi',
+                icon: '🎯',
+                pillar: 'Halusinasi & Proyek AI Zonk',
+                topicHeading: 'Kenapa AI PD Banget Pas Ngarang dan 95% Proyek AI Kantor Malah Zonk',
+                anchorSummary: 'Why Language Models Hallucinate (OpenAI 2025), MIT NANDA 95% pilot gagal P&L & >90% Shadow AI, 76% bisnis RI dasar',
+                titles: [
+                    { tag: 'Judul Utama', text: 'Kenapa AI PD Banget Pas Ngarang dan 95% Proyek AI Kantor Malah Zonk?' },
+                    { tag: 'Variasi Insider Bisnis', text: 'Fakta di Balik "Shadow AI": >90% Kantor Punya Karyawan yang Diam-Diam Pakai AI Pribadi' },
+                    { tag: 'Variasi Penjelasan Sains', text: 'Akhirnya OpenAI Ngaku Kenapa AI Suka Halusinasi—Ternyata Mirip Ujian Sekolah!' }
+                ],
+                analogy: 'Ada dua analogi: pertama, AI suka mengarang pede karena sistem ujiannya kayak soal pilihan ganda tanpa nilai minus—kalau ngaku "nggak tahu" nilainya 0, tapi kalau nebak ngawur masih ada peluang benar. Kedua, proyek AI kantor banyak yang zonk kayak warkop beli mesin espresso Rp100 juta biar kelihatan keren, tapi lupa ngajarin pegawainya—ujung-ujungnya karyawan diam-diam nyeduh kopi saset di belakang (Shadow AI).',
+                hook: 'Pernah nggak lo dikasih sumber jurnal lengkap pakai nama penulis dan tahun sama AI—eh pas lo cari di Google, jurnalnya nggak pernah ada di muka bumi? Anehnya, kenapa AI nggak bilang aja "gue nggak tahu"?',
+                problem: 'Pada September 2025, tim peneliti OpenAI dan akademisi ngerilis paper ilmiah berjudul Why Language Models Hallucinate. Jawabannya ternyata bukan bug mistis, melainkan cara kita menilai AI: hampir semua leaderboard dan ujian AI pakai sistem kayak ujian pilihan ganda tanpa nilai minus. Kalau AI jawab jujur "saya tidak tahu", skornya nol; kalau dia nebak pede, secara statistik masih ada peluang beruntung. Jadi model AI literally teroptimasi buat jadi "tukang nebak penuh percaya diri". Nah, pas teknologi yang suka nebak ini langsung dicemplungin ke kantor tanpa alur kerja yang jelas, hasilnya brutal: laporan MIT Project NANDA 2025 nemuin 95% program pilot GenAI perusahaan gagal nunjukin dampak cuan terukur di laporan keuangan dalam sekitar 6 bulan.',
+                agitate: 'Yang lebih bikin merinding dari temuan yang sama: sementara proyek AI resmi kantor banyak yang mandek, lebih dari 90% organisasi yang disurvei punya fenomena Shadow AI—karyawan diam-diam pakai akun AI pribadi di luar sistem resmi kantor biar kerjaan cepet kelar! Di Indonesia, polanya mirip banget: 76% bisnis yang adopsi AI masih mentok di level permukaan, dan di sektor UMKM, riset BRIN nyoroti kendala besar karena mayoritas belum punya infrastruktur maupun proteksi data memadai. Bayangin kalau data nasabah atau strategi harga perusahaan lo ikut kebawa ke AI publik cuma gara-gara kantor nggak nyediain alat resmi yang aman—itu bukan efisiensi, itu bom waktu pelanggaran UU PDP.',
+                solution: 'Terus gimana cara masuk ke 5% yang beneran berdampak? Pertama, kalau lo pakai AI buat riset atau kerja, selalu tambahin pagar di prompt: "Kalau lo nggak nemu datanya di dokumen ini, wajib bilang tidak tahu dan jangan mengarang sumber"—plus selalu verifikasi link aslinya. Kedua, buat lo yang punya bisnis atau tim, lihat contoh implementasi lokal seperti Bank Syariah Indonesia (BSI) dalam studi kasus Microsoft 2026: jangan bikin proyek AI cuma buat pamer demo, tapi integrasikan langsung ke alat kerja harian yang aman dengan prinsip data protection by design, mulai dari satu proses back-office yang jelas ukurannya, baru diperluas.',
+                cta: 'Spill momen paling kocak atau paling fatal waktu AI pernah "ngarang bebas" ke lo—pernah hampir ketipu pas ngerjain tugas atau kerjaan kantor? Ceritain di komentar!',
+                nuances: [
+                    'Angka "95% pilot gagal" (MIT NANDA 2025) memakai definisi sukses ketat (terlihat di P&L dalam ~6 bulan) berbasis 52 wawancara eksekutif, 153 survei, dan 300+ observasi pilot publik. Bukan berarti "95% AI tidak berguna", melainkan 95% pilot gagal memberi dampak finansial terukur karena buruknya integrasi workflow.',
+                    'Studi kasus transformasi AI BSI bersumber dari laporan Microsoft (vendor), sedangkan efisiensi cloud/AI di InJourney Aviation Services (IAS) berasal dari rilis kolaborasi Xtremax/AWS.'
+                ],
+                citations: [
+                    { label: 'OpenAI Research — Why Language Models Hallucinate (arXiv:2509.04664)', url: 'https://arxiv.org/abs/2509.04664' },
+                    { label: 'Penjelasan Resmi OpenAI — Analogi Ujian Pilihan Ganda', url: 'https://openai.com/index/why-language-models-hallucinate/' },
+                    { label: 'MIT Project NANDA — The GenAI Divide: State of AI in Business 2025 (PDF)', url: 'https://mlq.ai/media/quarterly_decks/v0.1_State_of_AI_in_Business_2025_Report.pdf' },
+                    { label: 'BRIN — Soroti Kendala Adopsi Teknologi Digital UMKM Indonesia', url: 'https://brin.go.id/news/124058/brin-soroti-rendahnya-adopsi-teknologi-digital-oleh-umkm-indonesia' },
+                    { label: 'Microsoft WTI 2026 — Studi Kasus Transformasi AI BSI', url: 'https://news.microsoft.com/source/asia/2026/06/30/work-trend-index-2026-microsoft-33-pekerja-indonesia-berada-di-garis-depan-adopsi-ai/?lang=id' }
+                ]
+            },
+            {
+                id: 9,
+                category: 'kognitif',
+                icon: '⚖️',
+                pillar: 'Hak Cipta & AI Slop',
+                topicHeading: 'Konten AI Murni Nggak Punya Hak Cipta dan Publik Mulai Muak sama AI Slop',
+                anchorSummary: 'Sikap DJKI April 2026 (100% mesin tidak dilindungi hak cipta), 56,1% publik bingung asli/palsu (Digital 2026), #TolakGambarAI',
+                titles: [
+                    { tag: 'Judul Utama', text: 'Bikin Karya 100% Pakai AI di Indonesia Ternyata Nggak Punya Hak Cipta!' },
+                    { tag: 'Variasi Kreator & Brand', text: 'Kenapa Iklan dan Konten "AI Slop" Makin Dibenci Netizen Indo? Ini Datanya' },
+                    { tag: 'Variasi Hukum Kreatif', text: 'Sikap DJKI April 2026: Kapan Karya Berbantuan AI Boleh Diklaim Milik Lo?' }
+                ],
+                analogy: 'Ngeklaim gambar atau lagu 100% hasil prompt sebagai hak cipta pribadi itu ibarat lo pesen nasi goreng ke robot koki cuma lewat chat "bikin yang pedes", terus pas mateng lo ngaku itu resep orisinal buatan tangan lo sendiri dan mau lo patenin. Nggak bisa—dan makin banyak restoran pakai robot yang sama, makin enek pelanggan karena rasanya seragam dan hambar semua.',
+                hook: 'Buat lo yang bikin ilustrasi, musik, atau materi iklan brand 100% hasil generate AI terus berniat lo klaim jadi hak milik—stop dulu. Di Indonesia, karya murni buatan mesin nggak diakui dan nggak dilindungi hak cipta.',
+                problem: 'Mengutip sikap Direktorat Jenderal Kekayaan Intelektual (DJKI) April 2026 yang diulas praktisi hukum HKI, karya yang sepenuhnya dihasilkan mesin tanpa sentuhan kreatif manusia tidak mendapat perlindungan sebagai ciptaan. Artinya, kalau kompetitor atau orang asing ngambil mentah-mentah desain atau lagu 100% AI yang lo bikin, lo nggak punya tameng hukum buat nuntut mereka! Di sisi lain, UU Hak Cipta kita sekarang masih punya kekosongan aturan yang bikin ribut: belum ada standar baku seberapa besar "kontribusi manusia" yang dianggap cukup, sementara banyak model AI dilatih dari karya seniman tanpa izin.',
+                agitate: 'Dan efeknya bukan cuma soal hukum, tapi soal kepercayaan audiens. Laporan Digital 2026: Indonesia yang dikutip pelaku media intelligence mencatat 56,1% orang Indonesia udah khawatir susah bedain mana konten asli dan mana yang palsu di internet. Begitu feed kita dibanjiri konten instan berkualitas rendah alias AI slop—yang visualnya aneh, naskahnya kaku kayak robot, atau niru gaya ilustrator tanpa izin—netizen makin sensitif dan cepat ilfeel. Di Indonesia sendiri perlawanan ilustrator lewat gerakan seperti #TolakGambarAI makin vokal, dan di level global praktisi marketing menyoroti bagaimana brand segede McDonald\'s pun sempat kehilangan kepercayaan konsumen gara-gara rilis iklan AI.',
+                solution: 'Pesan buat kreator, desainer, dan brand Indonesia jelas banget: sentuhan manusia sekarang bukan sekadar idealisme, tapi aset bisnis paling mahal. Kalau mau pakai AI, jadikan dia sebatas moodboard, riset awal, atau alat bantu teknis—lalu pastikan eksekusi akhir, cerita, rasa, dan sudut pandang uniknya tetap lahir dari tangan serta pengalaman manusia. Selain lebih berpeluang memenuhi unsur kontribusi kreatif manusia di mata hukum saat revisi UU Hak Cipta berjalan, konten yang punya "nyawa manusia" justru bakal makin menonjol di tengah lautan AI slop yang seragam.',
+                cta: 'Kalau lo lagi scrolling dan langsung sadar sebuah iklan atau konten itu 100% AI, lo biasanya tetap nonton sampai habis atau langsung skip? Jujur di komentar ya!',
+                nuances: [
+                    'Sikap DJKI April 2026 mengecualikan karya yang sepenuhnya dihasilkan mesin tanpa sentuhan kreatif manusia; apabila AI dipakai sebagai alat bantu dengan kontribusi kreatif manusia yang memadai, perlindungan hak cipta atas bagian kreatif manusianya tetap dimungkinkan.',
+                    'Revisi formal UU Hak Cipta Indonesia terkait definisi karya AI dan dataset pelatihan masih terus bergulir.'
+                ],
+                citations: [
+                    { label: 'ALO Advokat — Sikap DJKI April 2026 & Problematika Hak Cipta Karya AI RI', url: 'https://aloadvokat.com/alo-hukum/hak-cipta-musik-ai-indonesia/' },
+                    { label: 'Rewang Rencang — Kekosongan Hukum Karya AI di Indonesia', url: 'https://rewangrencang.com/apakah-karya-ai-termasuk-hak-cipta-kekosongan-hukum-di-indonesia/' },
+                    { label: 'Kazee Media Intelligence — 56,1% Publik RI Khawatir Konten Asli vs Palsu', url: 'https://blog.kazee.id/media-intelligence-untuk-influencer-creator-economy-cara-menemukan-mengevaluasi-dan-mengelola-risiko-kolaborasi' },
+                    { label: 'ResearchGate — Studi Gerakan #TolakGambarAI Seniman Digital RI', url: 'https://www.researchgate.net/publication/415108583_Gerakan_TolakGambarAI_Perlawanan_Kolektif_Seniman_Digital_dalam_Menghadapi_Gempuran_Gambar_Generative_Artificial_Intelligence' },
+                    { label: 'Founderplus — Studi Kasus Brand Global Kehilangan Kepercayaan Iklan AI', url: 'https://founderplus.id/blog/studi-kasus-viral-marketing-hijacking-startup/' }
+                ]
+            }
+        ];
+
+        const checklistItems = [
+            {
+                step: 'LANGKAH 01',
+                title: 'Tunjukkan "Struk Bukti" di Detik ke-5 s/d ke-15',
+                desc: 'Setiap kali menyebut angka (misal 17,50% TPT muda BPS, Rp104,3 T GASA, atau skor COPAL-ID), tempelkan tangkapan layar grafik atau halaman pertama paper/berita resmi yang diberi sorotan stabilo agar penonton langsung percaya.'
+            },
+            {
+                step: 'LANGKAH 02',
+                title: 'Variasikan Tempo di Transisi Agitate → Solution',
+                desc: 'Bacakan bagian Hook dengan nada obrolan tajam (bukan teriak lebay), turunkan tempo sedikit saat menyampaikan Analogi agar otak penonton sempat membayangkan visualnya, lalu naikkan artikulasi di bagian Solution.'
+            },
+            {
+                step: 'LANGKAH 03',
+                title: 'Tempel 2–3 Link Sumber Utama di Pinned Comment',
+                desc: 'Gunakan tombol "Salin Sumber untuk Pinned Comment" di Studio Naskah lalu sematkan di kolom komentar. Ini menaikkan kredibilitas sekaligus memicu diskusi berbobot di kolom komentar.'
+            },
+            {
+                step: 'LANGKAH 04',
+                title: 'Kalibrasi Sapaan Sesuai Persona Audiens Akun',
+                desc: 'Gunakan tombol sakelar "Lo / Gue" untuk persona kreator urban/nasional santai-cerdas, atau ubah ke "Kamu / Aku" untuk audiens edukasi kampus/karier semi-kasual tanpa merusak ritme naskah.'
+            }
+        ];
+
+        let activeScriptId = 1;
+        let activeTitleIdx = 0;
+        let activeCategory = 'all';
+        let searchQuery = '';
+        let personaMode = 'genz';
+        let checkedSteps = new Set();
+
+        function wrapLabel(label, maxChars = 16) {
+            if (label.length <= maxChars) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = '';
+            words.forEach((word) => {
+                if ((currentLine + ' ' + word).trim().length <= maxChars) {
+                    currentLine = (currentLine + ' ' + word).trim();
+                } else {
+                    if (currentLine) lines.push(currentLine);
+                    currentLine = word;
+                }
+            });
+            if (currentLine) lines.push(currentLine);
+            return lines;
+        }
+
+        function applyPersona(text) {
+            if (personaMode === 'genz') return text;
+            return text
+                .replace(/\bLo\b/g, 'Kamu')
+                .replace(/\blo\b/g, 'kamu')
+                .replace(/\bGue\b/g, 'Aku')
+                .replace(/\bgue\b/g, 'aku');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 2600);
+        }
+
+        function copyTextToClipboard(text, successMsg) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => showToast(successMsg));
+            } else {
+                const tempArea = document.createElement('textarea');
+                tempArea.value = text;
+                document.body.appendChild(tempArea);
+                tempArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempArea);
+                showToast(successMsg);
+            }
+        }
+
+        const chart1Configs = {
+            adoption: {
+                title: 'Paradoks Adopsi Digital & Kedalaman AI Indonesia (%)',
+                subtitle: 'Sumber: APJII 2026, Google–Temasek–Bain e-Conomy SEA 2026, AWS & Microsoft WTI 2026.',
+                insight: '<strong>Insight Kunci:</strong> Penetrasi internet RI mencapai 81,72% (235,26 juta jiwa), namun 80–85% pemakaian AI masih sebatas tugas konsumen ringan di smartphone dan 76% perusahaan pengadopsi masih berhenti di tahap dasar.',
+                labels: [
+                    'Internet via Smartphone',
+                    'Pekerja Advanced Output Naik',
+                    'Penetrasi Internet Nasional',
+                    'Perusahaan AI Tahap Dasar',
+                    'Adopsi AI Perusahaan RI',
+                    'Token SEA vs Level AS',
+                    'Pengguna AI Berbayar SEA'
+                ],
+                values: [84.31, 82.0, 81.72, 76.0, 40.0, 10.0, 1.5],
+                colors: ['#0F766E', '#0F766E', '#14B8A6', '#B45309', '#0D9488', '#D97706', '#DC2626'],
+                unit: '%'
+            },
+            labor: {
+                title: 'Jurang Ketenagakerjaan Gen Z & Kesiapan Kantor RI (%)',
+                subtitle: 'Sumber: BPS Agustus 2026, ILO Youth Brief Oktober 2026, & Microsoft Work Trend Index 2025.',
+                insight: '<strong>Insight Kunci:</strong> TPT usia muda (17,50%) hampir 3,7× rata-rata nasional (4,75%). Sementara di kantor RI ada gap 31 poin antara bos yang yakin pakai agen AI (95%) & pimpinan yang paham (87%) dibanding karyawan yang paham (56%).',
+                labels: [
+                    'Bos RI Yakin Agen AI',
+                    'Pimpinan Paham Agen AI',
+                    'Loker IT Pemula >=3 Thn',
+                    'Karyawan Paham Agen AI',
+                    'TPT Usia Muda 15-24 Thn',
+                    'TPT Nasional RI Agu 2026'
+                ],
+                values: [95.0, 87.0, 60.0, 56.0, 17.5, 4.75],
+                colors: ['#0F766E', '#14B8A6', '#B45309', '#0D9488', '#DC2626', '#57534E'],
+                unit: '%'
+            }
+        };
+
+        const chart2Configs = {
+            tokentax: {
+                title: 'Rasio "Pajak Token" Bahasa Indonesia vs Bahasa Inggris',
+                subtitle: 'Sumber: Audit Tokenizer FertiScope / FLORES-200 (1,00× = Baseline Bahasa Inggris).',
+                insight: '<strong>Insight Kunci:</strong> Kalimat identik dalam Bahasa Indonesia membutuhkan 1,24× lebih banyak token di GPT-4o dan 1,52×–1,53× di Llama-3.1 serta GPT-4 dibanding Bahasa Inggris, membuat biaya API dan memori konteks startup lokal lebih boros 24%–53%.',
+                labels: [
+                    'Bahasa Inggris (Baseline)',
+                    'Bahasa Indonesia (GPT-4o)',
+                    'Bahasa Indonesia (Llama-3.1)',
+                    'Bahasa Indonesia (GPT-4)'
+                ],
+                values: [1.0, 1.24, 1.52, 1.53],
+                colors: ['#78716C', '#0F766E', '#B45309', '#9A3412'],
+                unit: '× Token'
+            },
+            cyber: {
+                title: 'Peta Kerentanan Scam & Kebiasaan Siber Gen Z (%)',
+                subtitle: 'Sumber: GASA & Mastercard Nov 2026, OJK IASC Nov 2026, & Kaspersky Gen Z Aug 2026.',
+                insight: '<strong>Insight Kunci:</strong> 80% korban scam OJK baru sadar setelah rata-rata 12 jam dan 73% serangan masuk via WA. Di sisi lain, 52% Gen Z pernah kena serangan siber karena baru 27% yang pasang antivirus HP & 28% rutin backup.',
+                labels: [
+                    'Korban Baru Sadar >12 Jam',
+                    'Jalur Scam via WhatsApp',
+                    'Warga RI Terpapar Scam',
+                    'Gen Z Kena Serangan Siber',
+                    'Gen Z Rutin Backup Data',
+                    'Gen Z Pasang Antivirus HP'
+                ],
+                values: [80.0, 73.0, 70.0, 52.0, 28.0, 27.0],
+                colors: ['#B45309', '#D97706', '#0F766E', '#DC2626', '#57534E', '#78716C'],
+                unit: '%'
+            },
+            energy: {
+                title: 'Proyeksi Kebutuhan Listrik Data Center Nasional (Gigawatt)',
+                subtitle: 'Sumber: Kementerian ESDM & BP Batam (September–November 2026).',
+                insight: '<strong>Insight Kunci:</strong> Pengembangan pusat data RI membutuhkan tambahan listrik sekitar 20 GW (~20% kapasitas nasional saat ini), sementara di Batam kebutuhan data center (1,47 GW) diproyeksikan melampaui separuh beban puncak pulau pada 2029.',
+                labels: [
+                    'Data Center Batam 2029',
+                    'Beban Puncak Batam 2029',
+                    'Tambahan Listrik DC RI',
+                    'Estimasi Kapasitas RI Kini'
+                ],
+                values: [1.47, 2.54, 20.0, 100.0],
+                colors: ['#0D9488', '#57534E', '#B45309', '#0F766E'],
+                unit: ' GW'
+            }
+        };
+
+        let chart1Instance = null;
+        let chart2Instance = null;
+
+        function renderChart1(viewKey) {
+            const cfg = chart1Configs[viewKey];
+            document.getElementById('chart1Title').textContent = cfg.title;
+            document.getElementById('chart1Subtitle').textContent = cfg.subtitle;
+            document.getElementById('chart1Insight').innerHTML = cfg.insight;
+
+            const ctx = document.getElementById('chartEcosystem').getContext('2d');
+            if (chart1Instance) chart1Instance.destroy();
+
+            chart1Instance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: cfg.labels.map((l) => wrapLabel(l, 16)),
+                    datasets: [{
+                        label: 'Persentase (%)',
+                        data: cfg.values,
+                        backgroundColor: cfg.colors,
+                        borderRadius: 8,
+                        maxBarThickness: 42
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1C1917',
+                            padding: 12,
+                            cornerRadius: 10,
+                            callbacks: {
+                                title: (items) => {
+                                    const idx = items[0].dataIndex;
+                                    return cfg.labels[idx];
+                                },
+                                label: (item) => ` Nilai: ${item.raw}${cfg.unit}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#E7E5E4' },
+                            ticks: {
+                                font: { family: '"JetBrains Mono"', size: 11 },
+                                callback: (val) => val + '%'
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { family: '"Plus Jakarta Sans"', size: 11, weight: '600' },
+                                color: '#44403C'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderChart2(viewKey) {
+            const cfg = chart2Configs[viewKey];
+            document.getElementById('chart2Title').textContent = cfg.title;
+            document.getElementById('chart2Subtitle').textContent = cfg.subtitle;
+            document.getElementById('chart2Insight').innerHTML = cfg.insight;
+
+            const ctx = document.getElementById('chartRisks').getContext('2d');
+            if (chart2Instance) chart2Instance.destroy();
+
+            const isHorizontal = viewKey === 'tokentax';
+
+            chart2Instance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: cfg.labels.map((l) => wrapLabel(l, 16)),
+                    datasets: [{
+                        label: cfg.unit,
+                        data: cfg.values,
+                        backgroundColor: cfg.colors,
+                        borderRadius: 8,
+                        maxBarThickness: 38
+                    }]
+                },
+                options: {
+                    indexAxis: isHorizontal ? 'y' : 'x',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1C1917',
+                            padding: 12,
+                            cornerRadius: 10,
+                            callbacks: {
+                                title: (items) => {
+                                    const idx = items[0].dataIndex;
+                                    return cfg.labels[idx];
+                                },
+                                label: (item) => ` Metrik: ${item.raw}${cfg.unit}`
+                            }
+                        }
+                    },
+                    scales: isHorizontal
+                        ? {
+                            x: {
+                                beginAtZero: true,
+                                max: 1.8,
+                                grid: { color: '#E7E5E4' },
+                                ticks: {
+                                    font: { family: '"JetBrains Mono"', size: 11 },
+                                    callback: (val) => val + '×'
+                                }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: {
+                                    font: { family: '"Plus Jakarta Sans"', size: 11, weight: '600' },
+                                    color: '#44403C'
+                                }
+                            }
+                        }
+                        : {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#E7E5E4' },
+                                ticks: {
+                                    font: { family: '"JetBrains Mono"', size: 11 },
+                                    callback: (val) => val + cfg.unit
+                                }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    font: { family: '"Plus Jakarta Sans"', size: 11, weight: '600' },
+                                    color: '#44403C'
+                                }
+                            }
+                        }
+                }
+            });
+        }
+
+        function renderTopicList() {
+            const listContainer = document.getElementById('topicSelectorList');
+            const filtered = scriptsData.filter((item) => {
+                const matchesCat = activeCategory === 'all' || item.category === activeCategory;
+                const q = searchQuery.toLowerCase();
+                const matchesQuery =
+                    !q ||
+                    item.pillar.toLowerCase().includes(q) ||
+                    item.topicHeading.toLowerCase().includes(q) ||
+                    item.analogy.toLowerCase().includes(q) ||
+                    item.anchorSummary.toLowerCase().includes(q) ||
+                    item.titles.some((t) => t.text.toLowerCase().includes(q));
+                return matchesCat && matchesQuery;
+            });
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `
+          <div class="p-6 rounded-2xl bg-white border border-stone-200 text-center text-xs text-stone-500">
+            Tidak ada topik yang cocok dengan pencarian "<strong>${searchQuery}</strong>". Coba kata kunci lain.
+          </div>
+        `;
+                return;
+            }
+
+            if (!filtered.some((f) => f.id === activeScriptId)) {
+                activeScriptId = filtered[0].id;
+                activeTitleIdx = 0;
+            }
+
+            listContainer.innerHTML = filtered
+                .map((item) => {
+                    const isSelected = item.id === activeScriptId;
+                    return `
+            <button type="button" data-id="${item.id}" class="topic-select-btn w-full text-left p-4 rounded-2xl border transition flex items-start gap-3 ${isSelected
+                            ? 'bg-teal-900 text-white border-teal-900 shadow-sm'
+                            : 'bg-white text-stone-900 border-stone-200 hover:border-teal-600'
+                        }">
+              <span class="text-xl shrink-0 mt-0.5">${item.icon}</span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-2 mb-1">
+                  <span class="font-mono text-[11px] font-bold uppercase ${isSelected ? 'text-teal-300' : 'text-teal-700'
+                        }">#${item.id} • ${item.pillar}</span>
+                </div>
+                <p class="text-xs sm:text-sm font-bold leading-snug line-clamp-2 ${isSelected ? 'text-white' : 'text-stone-900'
+                        }">${applyPersona(item.titles[0].text)}</p>
+                <p class="text-[11px] mt-1.5 line-clamp-1 ${isSelected ? 'text-teal-100/80' : 'text-stone-500'
+                        }">${item.anchorSummary}</p>
+              </div>
+            </button>
+          `;
+                })
+                .join('');
+
+            document.querySelectorAll('.topic-select-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    activeScriptId = Number(btn.getAttribute('data-id'));
+                    activeTitleIdx = 0;
+                    renderTopicList();
+                    renderWorkspace();
+                });
+            });
+        }
+
+        function renderWorkspace() {
+            const item = scriptsData.find((s) => s.id === activeScriptId) || scriptsData[0];
+
+            document.getElementById('wsBadgeNumber').textContent = `NASKAH #${item.id}`;
+            document.getElementById('wsBadgePillar').textContent = `${item.icon} ${item.pillar}`;
+            document.getElementById('wsTopicHeading').textContent = item.topicHeading;
+
+            const titlesContainer = document.getElementById('wsTitlesContainer');
+            titlesContainer.innerHTML = item.titles
+                .map((t, idx) => {
+                    const isActive = idx === activeTitleIdx;
+                    const processedTitle = applyPersona(t.text);
+                    return `
+            <button type="button" data-title-idx="${idx}" class="title-choice-btn w-full text-left p-3 rounded-xl border transition flex items-center justify-between gap-3 ${isActive
+                            ? 'bg-teal-50/90 border-teal-600 text-stone-900'
+                            : 'bg-[#FAF8F5] border-stone-200 text-stone-700 hover:border-stone-400'
+                        }">
+              <div class="flex items-start sm:items-center gap-2.5">
+                <span class="font-mono text-[10px] font-bold uppercase px-2 py-0.5 rounded shrink-0 ${isActive ? 'bg-teal-700 text-white' : 'bg-stone-200 text-stone-700'
+                        }">${t.tag}</span>
+                <span class="text-xs sm:text-sm font-bold leading-snug">${processedTitle}</span>
+              </div>
+              <span class="text-xs font-mono shrink-0 ${isActive ? 'text-teal-700 font-bold' : 'text-stone-400'}">
+                ${isActive ? '● Aktif' : 'Pilih'}
+              </span>
+            </button>
+          `;
+                })
+                .join('');
+
+            document.querySelectorAll('.title-choice-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    activeTitleIdx = Number(btn.getAttribute('data-title-idx'));
+                    renderWorkspace();
+                });
+            });
+
+            document.getElementById('wsAnalogyText').textContent = applyPersona(item.analogy);
+
+            const stages = [
+                { key: 'HOOK', badgeBg: 'bg-teal-700 text-white', border: 'border-l-4 border-l-teal-700', hint: '0–10 detik • Pemantik rasa penasaran', content: item.hook },
+                { key: 'PROBLEM', badgeBg: 'bg-stone-800 text-white', border: 'border-l-4 border-l-stone-800', hint: '10–30 detik • Fakta keras & data riset', content: item.problem },
+                { key: 'AGITATE', badgeBg: 'bg-amber-700 text-white', border: 'border-l-4 border-l-amber-700', hint: '30–50 detik • Analogi & dampak nyata', content: item.agitate },
+                { key: 'SOLUTION', badgeBg: 'bg-emerald-700 text-white', border: 'border-l-4 border-l-emerald-700', hint: '50–75 detik • Langkah taktis & solusi', content: item.solution },
+                { key: 'CTA', badgeBg: 'bg-indigo-700 text-white', border: 'border-l-4 border-l-indigo-700', hint: '75–90 detik • Pancing komentar organik', content: item.cta }
+            ];
+
+            document.getElementById('wsScriptBlocks').innerHTML = stages
+                .map((st) => {
+                    const processedText = applyPersona(st.content);
+                    return `
+            <div class="p-4 rounded-2xl bg-[#FAF8F5] border border-stone-200 ${st.border} space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[11px] font-extrabold px-2.5 py-0.5 rounded-md ${st.badgeBg}">${st.key}</span>
+                  <span class="text-[11px] text-stone-500 font-medium">${st.hint}</span>
+                </div>
+                <button type="button" data-stage-text="${encodeURIComponent(processedText)}" class="copy-stage-btn text-[11px] font-semibold text-stone-500 hover:text-teal-800 transition">Salin Bagian</button>
+              </div>
+              <p class="text-sm sm:text-[15px] text-stone-800 leading-relaxed">${processedText}</p>
+            </div>
+          `;
+                })
+                .join('');
+
+            document.querySelectorAll('.copy-stage-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const decoded = decodeURIComponent(btn.getAttribute('data-stage-text'));
+                    copyTextToClipboard(decoded, 'Bagian naskah berhasil disalin!');
+                });
+            });
+
+            document.getElementById('wsNuanceList').innerHTML = item.nuances
+                .map((n) => `<li>${n}</li>`)
+                .join('');
+
+            document.getElementById('wsCitationsList').innerHTML = item.citations
+                .map(
+                    (c) => `
+            <a href="${c.url}" target="_blank" rel="noopener noreferrer" class="p-3 rounded-xl bg-[#FAF8F5] hover:bg-teal-50/70 border border-stone-200 hover:border-teal-400 transition flex items-start justify-between gap-2 group">
+              <span class="text-xs font-semibold text-stone-800 group-hover:text-teal-900 leading-snug">${c.label}</span>
+              <span class="font-mono text-xs text-teal-700 shrink-0">↗</span>
+            </a>
+          `
+                )
+                .join('');
+        }
+
+        function renderMatrixTable() {
+            const tbody = document.getElementById('matrixTableBody');
+            tbody.innerHTML = scriptsData
+                .map(
+                    (item) => `
+            <tr class="hover:bg-[#FAF8F5] transition">
+              <td class="py-3.5 px-4 font-mono font-bold text-stone-500 align-top">#${item.id}</td>
+              <td class="py-3.5 px-4 align-top">
+                <span class="inline-block font-mono text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-teal-50 text-teal-800 mb-1">${item.icon} ${item.pillar}</span>
+                <div class="font-bold text-stone-900 leading-snug">${applyPersona(item.titles[0].text)}</div>
+              </td>
+              <td class="py-3.5 px-4 text-stone-600 align-top max-w-xs">${applyPersona(item.analogy)}</td>
+              <td class="py-3.5 px-4 font-mono text-xs text-stone-700 align-top max-w-xs">${item.anchorSummary}</td>
+              <td class="py-3.5 px-4 text-right align-top">
+                <button type="button" data-jump-id="${item.id}" class="jump-studio-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-teal-700 text-white text-xs font-bold transition whitespace-nowrap">
+                  <span>Buka Naskah</span>
+                  <span>↑</span>
+                </button>
+              </td>
+            </tr>
+          `
+                )
+                .join('');
+
+            document.querySelectorAll('.jump-studio-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const targetId = Number(btn.getAttribute('data-jump-id'));
+                    activeCategory = 'all';
+                    searchQuery = '';
+                    document.getElementById('scriptSearch').value = '';
+                    updateCategoryPills();
+                    activeScriptId = targetId;
+                    activeTitleIdx = 0;
+                    renderTopicList();
+                    renderWorkspace();
+                    document.getElementById('studio-naskah').scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+        }
+
+        function renderChecklist() {
+            const grid = document.getElementById('productionChecklistGrid');
+            grid.innerHTML = checklistItems
+                .map((c, idx) => {
+                    const isDone = checkedSteps.has(idx);
+                    return `
+            <button type="button" data-step-idx="${idx}" class="checklist-card text-left p-5 rounded-3xl border transition flex items-start gap-4 ${isDone
+                            ? 'bg-teal-50/70 border-teal-500 shadow-xs'
+                            : 'bg-white border-stone-200 hover:border-teal-600 shadow-xs'
+                        }">
+              <span class="w-7 h-7 rounded-xl flex items-center justify-center font-mono text-xs font-extrabold shrink-0 mt-0.5 ${isDone ? 'bg-teal-700 text-white' : 'bg-stone-100 text-stone-500 border border-stone-300'
+                        }">${isDone ? '✓' : idx + 1}</span>
+              <div>
+                <span class="font-mono text-[11px] font-bold text-teal-700">${c.step}</span>
+                <h3 class="text-sm sm:text-base font-extrabold text-stone-900 mt-0.5 ${isDone ? 'line-through text-stone-500' : ''}">${c.title}</h3>
+                <p class="text-xs sm:text-sm text-stone-600 mt-1.5 leading-relaxed">${c.desc}</p>
+              </div>
+            </button>
+          `;
+                })
+                .join('');
+
+            document.getElementById('checklistProgress').textContent = `${checkedSteps.size} / ${checklistItems.length} Siap`;
+
+            document.querySelectorAll('.checklist-card').forEach((card) => {
+                card.addEventListener('click', () => {
+                    const idx = Number(card.getAttribute('data-step-idx'));
+                    if (checkedSteps.has(idx)) {
+                        checkedSteps.delete(idx);
+                    } else {
+                        checkedSteps.add(idx);
+                    }
+                    renderChecklist();
+                });
+            });
+        }
+
+        function updateCategoryPills() {
+            document.querySelectorAll('.cat-pill').forEach((pill) => {
+                const cat = pill.getAttribute('data-cat');
+                if (cat === activeCategory) {
+                    pill.className = 'cat-pill px-3.5 py-1.5 rounded-full text-xs font-bold bg-teal-700 text-white shadow-xs transition';
+                } else {
+                    pill.className = 'cat-pill px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white border border-stone-200 text-stone-700 hover:border-teal-600 transition';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderChart1('adoption');
+            renderChart2('tokentax');
+            renderTopicList();
+            renderWorkspace();
+            renderMatrixTable();
+            renderChecklist();
+
+            document.querySelectorAll('.chart1-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.chart1-btn').forEach((b) => {
+                        b.className = 'chart1-btn px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 transition';
+                    });
+                    btn.className = 'chart1-btn px-2.5 py-1 rounded-lg bg-white text-stone-900 shadow-xs transition';
+                    renderChart1(btn.getAttribute('data-view'));
+                });
+            });
+
+            document.querySelectorAll('.chart2-btn').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.chart2-btn').forEach((b) => {
+                        b.className = 'chart2-btn px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 transition';
+                    });
+                    btn.className = 'chart2-btn px-2.5 py-1 rounded-lg bg-white text-stone-900 shadow-xs transition';
+                    renderChart2(btn.getAttribute('data-view'));
+                });
+            });
+
+            document.querySelectorAll('.cat-pill').forEach((pill) => {
+                pill.addEventListener('click', () => {
+                    activeCategory = pill.getAttribute('data-cat');
+                    updateCategoryPills();
+                    renderTopicList();
+                    renderWorkspace();
+                });
+            });
+
+            document.getElementById('scriptSearch').addEventListener('input', (e) => {
+                searchQuery = e.target.value;
+                renderTopicList();
+                renderWorkspace();
+            });
+
+            document.getElementById('personaGenZ').addEventListener('click', () => {
+                personaMode = 'genz';
+                document.getElementById('personaGenZ').className = 'px-2.5 py-1 rounded-lg bg-white text-teal-800 shadow-xs transition';
+                document.getElementById('personaNasional').className = 'px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 transition';
+                renderTopicList();
+                renderWorkspace();
+                renderMatrixTable();
+                showToast('Sapaan diubah ke Gaya Gaul Gen Z (Lo / Gue)');
+            });
+
+            document.getElementById('personaNasional').addEventListener('click', () => {
+                personaMode = 'nasional';
+                document.getElementById('personaNasional').className = 'px-2.5 py-1 rounded-lg bg-white text-teal-800 shadow-xs transition';
+                document.getElementById('personaGenZ').className = 'px-2.5 py-1 rounded-lg text-stone-600 hover:text-stone-900 transition';
+                renderTopicList();
+                renderWorkspace();
+                renderMatrixTable();
+                showToast('Sapaan diubah ke Gaya Semi-Kasual Nasional (Kamu / Aku)');
+            });
+
+            document.getElementById('btnCopyTitle').addEventListener('click', () => {
+                const item = scriptsData.find((s) => s.id === activeScriptId) || scriptsData[0];
+                const titleText = applyPersona(item.titles[activeTitleIdx].text);
+                copyTextToClipboard(titleText, 'Judul terpilih berhasil disalin!');
+            });
+
+            document.getElementById('btnCopyFullScript').addEventListener('click', () => {
+                const item = scriptsData.find((s) => s.id === activeScriptId) || scriptsData[0];
+                const selectedTitle = applyPersona(item.titles[activeTitleIdx].text);
+                const fullText = [
+                    `JUDUL: ${selectedTitle}`,
+                    ``,
+                    `[HOOK]`,
+                    applyPersona(item.hook),
+                    ``,
+                    `[PROBLEM]`,
+                    applyPersona(item.problem),
+                    ``,
+                    `[AGITATE]`,
+                    applyPersona(item.agitate),
+                    ``,
+                    `[SOLUTION]`,
+                    applyPersona(item.solution),
+                    ``,
+                    `[CTA]`,
+                    applyPersona(item.cta)
+                ].join('\n');
+                copyTextToClipboard(fullText, 'Naskah lengkap (Judul + HPAS-CTA) disalin!');
+            });
+
+            document.getElementById('btnCopyCitations').addEventListener('click', () => {
+                const item = scriptsData.find((s) => s.id === activeScriptId) || scriptsData[0];
+                const citationText = [
+                    `📚 Sumber Riset & Data Resmi (${item.pillar}):`,
+                    ...item.citations.map((c, i) => `${i + 1}. ${c.label}: ${c.url}`)
+                ].join('\n');
+                copyTextToClipboard(citationText, 'Daftar link bukti ilmiah disalin untuk Pinned Comment!');
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+from pathlib import Path
 import re
 from typing import Any
 
@@ -27,30 +28,53 @@ def _parse_words_payload(raw_text: str) -> list[WordTimestamp]:
     if fence_match:
         cleaned = fence_match.group(1)
 
-    parsed: Any = json.loads(cleaned)
-    items = parsed.get("words", []) if isinstance(parsed, dict) else parsed
-    if not isinstance(items, list):
-        return []
-
     words: list[WordTimestamp] = []
-    for item in items:
-        if not isinstance(item, dict):
-            continue
-        word_text = str(item.get("text") or item.get("word") or "").strip()
-        if not word_text:
-            continue
-        try:
-            start_sec = max(0.0, float(item.get("startSec", item.get("start", 0.0))))
-            end_sec = max(start_sec, float(item.get("endSec", item.get("end", start_sec + 0.1))))
-        except (TypeError, ValueError):
-            continue
-        words.append(
-            WordTimestamp(
-                text=word_text,
-                startSec=round(start_sec, 3),
-                endSec=round(end_sec, 3),
-            )
+    try:
+        parsed: Any = json.loads(cleaned)
+        items = parsed.get("words", []) if isinstance(parsed, dict) else parsed
+        if isinstance(items, list):
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                word_text = str(item.get("text") or item.get("word") or "").strip()
+                if not word_text:
+                    continue
+                try:
+                    start_sec = max(0.0, float(item.get("startSec", item.get("start", 0.0))))
+                    end_sec = max(start_sec, float(item.get("endSec", item.get("end", start_sec + 0.1))))
+                except (TypeError, ValueError):
+                    continue
+                words.append(
+                    WordTimestamp(
+                        text=word_text,
+                        startSec=round(start_sec, 3),
+                        endSec=round(end_sec, 3),
+                    )
+                )
+    except Exception:
+        # Fallback parsing jika JSON terpotong di akhir (truncation)
+        pass
+
+    if not words:
+        # Ekstraksi tangguh berbasis regex untuk setiap objek word timestamp yang lengkap
+        pattern = re.compile(
+            r'\{\s*"(?:text|word)"\s*:\s*"([^"]+)"\s*,\s*"(?:startSec|start)"\s*:\s*([0-9.]+)\s*,\s*"(?:endSec|end)"\s*:\s*([0-9.]+)\s*\}'
         )
+        for match in pattern.finditer(cleaned):
+            w_text, s_str, e_str = match.groups()
+            try:
+                s_val = max(0.0, float(s_str))
+                e_val = max(s_val, float(e_str))
+                words.append(
+                    WordTimestamp(
+                        text=w_text.strip(),
+                        startSec=round(s_val, 3),
+                        endSec=round(e_val, 3),
+                    )
+                )
+            except (TypeError, ValueError):
+                continue
+
     return words
 
 
@@ -86,7 +110,8 @@ def calibrate_word_timestamps(
 
 def transcribe_audio(audio_file: str) -> TranscribeResponse:
     """Mentranskripsi file WAV di OUTPUT_AUDIO_DIR menjadi JSON word-level dan WebVTT."""
-    target_path = safe_resolve_under(OUTPUT_AUDIO_DIR, audio_file, ALLOWED_AUDIO_EXTENSIONS)
+    clean_filename = Path(audio_file).name if audio_file else ""
+    target_path = safe_resolve_under(OUTPUT_AUDIO_DIR, clean_filename, ALLOWED_AUDIO_EXTENSIONS)
     if not target_path.exists() or not target_path.is_file():
         raise FileNotFoundError(f"File audio '{target_path.name}' tidak ditemukan.")
 
@@ -109,13 +134,41 @@ def transcribe_audio(audio_file: str) -> TranscribeResponse:
             "Kembalikan HANYA JSON valid dengan format:\n"
             '{"words": [{"text": "kata", "startSec": 0.0, "endSec": 0.35}]}'
         )
-        response = client.models.generate_content(
-            model=TRANSCRIBE_MODEL,
-            contents=[uploaded_file, prompt],
-            config={"response_mime_type": "application/json", "temperature": 0.0},
-        )
-        raw_text = extract_response_text(response)
+
+        models_to_try = [TRANSCRIBE_MODEL]
+        for fallback_m in ("gemini-2.5-flash", "gemini-3.5-flash-lite"):
+            if fallback_m not in models_to_try:
+                models_to_try.append(fallback_m)
+
+        raw_text = None
+        last_exc: Exception | None = None
+        for candidate_model in models_to_try:
+            try:
+                response = client.models.generate_content(
+                    model=candidate_model,
+                    contents=[uploaded_file, prompt],
+                    config={
+                        "response_mime_type": "application/json",
+                        "temperature": 0.0,
+                        "max_output_tokens": 16384,
+                    },
+                )
+                candidate_text = extract_response_text(response)
+                if candidate_text:
+                    raw_text = candidate_text
+                    logger.info("Transkripsi berhasil diproses menggunakan model %s", candidate_model)
+                    break
+            except Exception as exc:
+                last_exc = exc
+                logger.warning(
+                    "Transkripsi dengan model '%s' gagal: %s. Mencoba model alternatif...",
+                    candidate_model,
+                    exc,
+                )
+
         if not raw_text:
+            if last_exc:
+                raise last_exc
             raise RuntimeError("Model transkripsi mengembalikan respons kosong.")
         words = _parse_words_payload(raw_text)
     finally:

@@ -69,7 +69,7 @@ DEFAULT_CHANNELS: int = 1
 DEFAULT_SAMPLE_WIDTH: int = 2  # 16-bit PCM
 REMOTION_FPS: int = 30
 
-ALLOWED_AUDIO_EXTENSIONS: tuple[str, ...] = (".wav",)
+ALLOWED_AUDIO_EXTENSIONS: tuple[str, ...] = (".wav", ".mp3", ".m4a", ".ogg", ".flac", ".aac", ".webm")
 ALLOWED_TRANSCRIPT_EXTENSIONS: tuple[str, ...] = (".json", ".vtt")
 
 # 16 Inline Vocal Tags Resmi Gemini
